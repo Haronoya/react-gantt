@@ -1,0 +1,180 @@
+:root {
+  /* Colors - Light theme */
+  --gantt-bg: #ffffff;
+  --gantt-bg-secondary: #fafafa;
+  --gantt-border: #e0e0e0;
+  --gantt-border-light: #f0f0f0;
+  --gantt-text: #333333;
+  --gantt-text-secondary: #666666;
+  --gantt-text-muted: #999999;
+
+  /* Header */
+  --gantt-header-bg: #f5f5f5;
+  --gantt-header-border: #e0e0e0;
+
+  /* Rows */
+  --gantt-row-bg: #ffffff;
+  --gantt-row-bg-alt: #fafafa;
+  --gantt-row-hover: #f0f7ff;
+  --gantt-row-selected: #e3f2fd;
+
+  /* Task bar colors */
+  --gantt-task-bg: #42a5f5;
+  --gantt-task-bg-hover: #1e88e5;
+  --gantt-task-progress: #1976d2;
+  --gantt-task-text: #ffffff;
+  --gantt-task-border: transparent;
+
+  /* Milestone colors */
+  --gantt-milestone-bg: #ff9800;
+  --gantt-milestone-border: #f57c00;
+
+  /* Group colors */
+  --gantt-group-bg: #78909c;
+  --gantt-group-progress: #546e7a;
+
+  /* Grid lines */
+  --gantt-grid-line: #f0f0f0;
+  --gantt-grid-line-strong: #e0e0e0;
+
+  /* Today line */
+  --gantt-today-line: #f44336;
+  --gantt-today-bg: rgba(244, 67, 54, 0.05);
+
+  /* Weekend */
+  --gantt-weekend-bg: rgba(0, 0, 0, 0.02);
+
+  /* Selection */
+  --gantt-selection-border: #1976d2;
+  --gantt-selection-bg: rgba(25, 118, 210, 0.1);
+
+  /* Dragging */
+  --gantt-drag-preview-bg: rgba(66, 165, 245, 0.3);
+  --gantt-drag-preview-border: #42a5f5;
+
+  /* Splitter */
+  --gantt-splitter-bg: #e0e0e0;
+  --gantt-splitter-bg-hover: #bdbdbd;
+  --gantt-splitter-bg-active: #9e9e9e;
+
+  /* Tooltip */
+  --gantt-tooltip-bg: #333333;
+  --gantt-tooltip-text: #ffffff;
+  --gantt-tooltip-border: transparent;
+
+  /* Scrollbar */
+  --gantt-scrollbar-track: #f5f5f5;
+  --gantt-scrollbar-thumb: #c0c0c0;
+  --gantt-scrollbar-thumb-hover: #a0a0a0;
+
+  /* Focus */
+  --gantt-focus-ring: #1976d2;
+  --gantt-focus-ring-offset: 2px;
+
+  /* Sizing */
+  --gantt-row-height: 36px;
+  --gantt-header-height: 40px;
+  --gantt-bar-height: 24px;
+  --gantt-bar-radius: 4px;
+  --gantt-milestone-size: 20px;
+  --gantt-splitter-width: 4px;
+  --gantt-indent-width: 20px;
+
+  /* Typography */
+  --gantt-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --gantt-font-size: 14px;
+  --gantt-font-size-small: 12px;
+  --gantt-font-size-header: 13px;
+  --gantt-font-weight-normal: 400;
+  --gantt-font-weight-medium: 500;
+  --gantt-font-weight-bold: 600;
+
+  /* Transitions */
+  --gantt-transition-fast: 100ms ease;
+  --gantt-transition-normal: 200ms ease;
+  --gantt-transition-slow: 300ms ease;
+
+  /* Shadows */
+  --gantt-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --gantt-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --gantt-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --gantt-shadow-tooltip: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  /* Z-index layers */
+  --gantt-z-grid: 1;
+  --gantt-z-bars: 2;
+  --gantt-z-selected: 3;
+  --gantt-z-dragging: 4;
+  --gantt-z-header: 10;
+  --gantt-z-splitter: 20;
+  --gantt-z-tooltip: 100;
+  --gantt-z-overlay: 1000;
+}
+
+/* Dark theme */
+[data-theme='dark'],
+.gantt-dark {
+  --gantt-bg: #1e1e1e;
+  --gantt-bg-secondary: #252525;
+  --gantt-border: #404040;
+  --gantt-border-light: #333333;
+  --gantt-text: #e0e0e0;
+  --gantt-text-secondary: #a0a0a0;
+  --gantt-text-muted: #707070;
+
+  --gantt-header-bg: #2d2d2d;
+  --gantt-header-border: #404040;
+
+  --gantt-row-bg: #1e1e1e;
+  --gantt-row-bg-alt: #252525;
+  --gantt-row-hover: #2a3a4a;
+  --gantt-row-selected: #1e3a5f;
+
+  --gantt-task-bg: #1e88e5;
+  --gantt-task-bg-hover: #42a5f5;
+  --gantt-task-progress: #1565c0;
+
+  --gantt-milestone-bg: #ffa726;
+  --gantt-milestone-border: #ff9800;
+
+  --gantt-group-bg: #607d8b;
+  --gantt-group-progress: #455a64;
+
+  --gantt-grid-line: #2d2d2d;
+  --gantt-grid-line-strong: #404040;
+
+  --gantt-today-bg: rgba(244, 67, 54, 0.1);
+  --gantt-weekend-bg: rgba(255, 255, 255, 0.02);
+
+  --gantt-selection-bg: rgba(25, 118, 210, 0.2);
+
+  --gantt-splitter-bg: #404040;
+  --gantt-splitter-bg-hover: #505050;
+  --gantt-splitter-bg-active: #606060;
+
+  --gantt-tooltip-bg: #424242;
+  --gantt-tooltip-border: #505050;
+
+  --gantt-scrollbar-track: #2d2d2d;
+  --gantt-scrollbar-thumb: #505050;
+  --gantt-scrollbar-thumb-hover: #606060;
+}
+
+/* Compact density */
+.gantt-compact {
+  --gantt-row-height: 28px;
+  --gantt-header-height: 32px;
+  --gantt-bar-height: 18px;
+  --gantt-font-size: 12px;
+  --gantt-font-size-small: 10px;
+}
+
+/* Comfortable density */
+.gantt-comfortable {
+  --gantt-row-height: 44px;
+  --gantt-header-height: 48px;
+  --gantt-bar-height: 30px;
+  --gantt-font-size: 14px;
+  --gantt-font-size-small: 12px;
+}

@@ -1,0 +1,179 @@
+.grid {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: var(--gantt-bg);
+  border-right: 1px solid var(--gantt-border);
+}
+
+.header {
+  display: flex;
+  align-items: stretch;
+  height: calc(var(--gantt-header-height) * 2);
+  background: var(--gantt-header-bg);
+  border-bottom: 1px solid var(--gantt-header-border);
+  flex-shrink: 0;
+}
+
+.headerCell {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: var(--gantt-font-size-header);
+  font-weight: var(--gantt-font-weight-medium);
+  color: var(--gantt-text);
+  border-right: 1px solid var(--gantt-border-light);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: none;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.headerCellText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.columnResizer {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 1;
+}
+
+.columnResizer:hover,
+.columnResizerActive {
+  background: var(--gantt-splitter-bg-hover);
+}
+
+.headerCell:last-child {
+  border-right: none;
+}
+
+.headerCell.alignLeft {
+  justify-content: flex-start;
+}
+
+.headerCell.alignCenter {
+  justify-content: center;
+}
+
+.headerCell.alignRight {
+  justify-content: flex-end;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.virtualList {
+  position: relative;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--gantt-border-light);
+  background: var(--gantt-row-bg);
+  cursor: pointer;
+  transition: background var(--gantt-transition-fast);
+}
+
+.row:nth-child(even) {
+  background: var(--gantt-row-bg-alt);
+}
+
+.row:hover {
+  background: var(--gantt-row-hover);
+}
+
+.row.selected {
+  background: var(--gantt-row-selected);
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  height: 100%;
+  font-size: var(--gantt-font-size);
+  color: var(--gantt-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border-right: 1px solid var(--gantt-border-light);
+}
+
+.cell:last-child {
+  border-right: none;
+}
+
+.cell.alignLeft {
+  justify-content: flex-start;
+}
+
+.cell.alignCenter {
+  justify-content: center;
+}
+
+.cell.alignRight {
+  justify-content: flex-end;
+}
+
+.expandButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--gantt-text-secondary);
+  flex-shrink: 0;
+}
+
+.expandButton:hover {
+  color: var(--gantt-text);
+}
+
+.expandIcon {
+  width: 10px;
+  height: 10px;
+  transition: transform var(--gantt-transition-fast);
+}
+
+.expandIcon.collapsed {
+  transform: rotate(-90deg);
+}
+
+.indent {
+  flex-shrink: 0;
+}
+
+.titleContent {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.titleText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

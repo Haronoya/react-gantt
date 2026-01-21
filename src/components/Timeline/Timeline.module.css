@@ -1,0 +1,136 @@
+.timeline {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  background: var(--gantt-bg);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  height: calc(var(--gantt-header-height) * 2);
+  background: var(--gantt-header-bg);
+  border-bottom: 1px solid var(--gantt-header-border);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.headerRow {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.headerCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--gantt-font-size-header);
+  font-weight: var(--gantt-font-weight-medium);
+  color: var(--gantt-text);
+  border-right: 1px solid var(--gantt-border-light);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.headerCell:last-child {
+  border-right: none;
+}
+
+.headerCellPrimary {
+  background: var(--gantt-header-bg);
+  border-bottom: 1px solid var(--gantt-border-light);
+}
+
+.headerCellSecondary {
+  font-size: var(--gantt-font-size-small);
+  color: var(--gantt-text-secondary);
+}
+
+.headerCellWeekend {
+  background: var(--gantt-weekend-bg);
+}
+
+.body {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+.canvas {
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+.gridLines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.gridLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--gantt-grid-line);
+}
+
+.gridLineStrong {
+  background: var(--gantt-grid-line-strong);
+}
+
+.todayLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--gantt-today-line);
+  z-index: 5;
+}
+
+.todayLine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -4px;
+  width: 10px;
+  height: 10px;
+  background: var(--gantt-today-line);
+  border-radius: 50%;
+}
+
+.weekendColumn {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--gantt-weekend-bg);
+  pointer-events: none;
+}
+
+.rowBackground {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  border-bottom: 1px solid var(--gantt-border-light);
+}
+
+.rowBackground:nth-child(even) {
+  background: var(--gantt-row-bg-alt);
+}
+
+.tasksContainer {
+  position: relative;
+  z-index: var(--gantt-z-bars);
+}

@@ -1,0 +1,164 @@
+.taskBar {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  border-radius: var(--gantt-bar-radius);
+  cursor: pointer;
+  transition: filter var(--gantt-transition-fast);
+  user-select: none;
+}
+
+.taskBar:hover {
+  filter: brightness(1.1);
+}
+
+.taskBar.selected {
+  box-shadow: 0 0 0 2px var(--gantt-selection-border);
+}
+
+.taskBar.dragging {
+  opacity: 0.8;
+  z-index: var(--gantt-z-dragging);
+}
+
+/* Task (normal) */
+.task {
+  background: var(--gantt-task-bg);
+  color: var(--gantt-task-text);
+}
+
+.taskProgress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: var(--gantt-task-progress);
+  border-radius: var(--gantt-bar-radius) 0 0 var(--gantt-bar-radius);
+  pointer-events: none;
+}
+
+.taskLabel {
+  position: relative;
+  z-index: 1;
+  padding: 0 8px;
+  font-size: var(--gantt-font-size-small);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Group */
+.group {
+  background: var(--gantt-group-bg);
+  color: var(--gantt-task-text);
+  border-radius: 2px;
+}
+
+.groupProgress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: var(--gantt-group-progress);
+  border-radius: 2px 0 0 2px;
+  pointer-events: none;
+}
+
+.groupEnds {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+.groupEndLeft,
+.groupEndRight {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 100%;
+  background: var(--gantt-group-bg);
+}
+
+.groupEndLeft {
+  left: 0;
+  transform: translateY(-50%) skewX(-10deg);
+  transform-origin: top right;
+}
+
+.groupEndRight {
+  right: 0;
+  transform: translateY(-50%) skewX(10deg);
+  transform-origin: top left;
+}
+
+/* Milestone */
+.milestone {
+  background: transparent;
+}
+
+.milestoneDiamond {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70%;
+  height: 70%;
+  background: var(--gantt-milestone-bg);
+  border: 2px solid var(--gantt-milestone-border);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.milestone.selected .milestoneDiamond {
+  box-shadow: 0 0 0 2px var(--gantt-selection-border);
+}
+
+/* Drag handles */
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  z-index: 2;
+}
+
+.resizeHandleLeft {
+  left: 0;
+}
+
+.resizeHandleRight {
+  right: 0;
+}
+
+.resizeHandle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Progress handle */
+.progressHandle {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  background: var(--gantt-task-text);
+  border: 2px solid var(--gantt-task-progress);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity var(--gantt-transition-fast);
+}
+
+.taskBar:hover .progressHandle {
+  opacity: 1;
+}
+
+/* Drag preview */
+.dragPreview {
+  position: absolute;
+  background: var(--gantt-drag-preview-bg);
+  border: 2px dashed var(--gantt-drag-preview-border);
+  border-radius: var(--gantt-bar-radius);
+  pointer-events: none;
+}

@@ -1,0 +1,31 @@
+.tooltip {
+  position: fixed;
+  z-index: var(--gantt-z-tooltip);
+  padding: 8px 12px;
+  background: var(--gantt-tooltip-bg);
+  color: var(--gantt-tooltip-text);
+  border-radius: 4px;
+  font-size: var(--gantt-font-size-small);
+  box-shadow: var(--gantt-shadow-tooltip);
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.title {
+  font-weight: var(--gantt-font-weight-medium);
+  margin-bottom: 4px;
+}
+
+.dates {
+  opacity: 0.9;
+  font-size: 11px;
+}
+
+.progress {
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.8;
+}

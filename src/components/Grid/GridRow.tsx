@@ -1,0 +1,66 @@
+'use client';
+
+import { memo, useCallback } from 'react';
+import type { NormalizedTask, ColumnDef } from '../../types';
+import { useGanttContext } from '../../context';
+import { GridCell } from './GridCell';
+import styles from './Grid.module.css';
+
+interface GridRowProps {
+  task: NormalizedTask;
+  columns: ColumnDef[];
+  style?: React.CSSProperties;
+}
+
+export const GridRow = memo(function GridRow({ task, columns, style }: GridRowProps) {
+  const {
+    isSelected,
+    handleRowClick,
+    handleToggleCollapse,
+    handleSelectionChange,
+    selection,
+  } = useGanttContext();
+
+  const selected = isSelected(task.id);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      // Update selection
+      handleSelectionChange({
+        ids: e.ctrlKey || e.metaKey
+          ? selected
+            ? selection.ids.filter((id) => id !== task.id)
+            : [...selection.ids, task.id]
+          : [task.id],
+        anchor: task.id,
+      });
+
+      handleRowClick(task, e);
+    },
+    [task, selected, selection, handleSelectionChange, handleRowClick]
+  );
+
+  const handleCollapse = useCallback(() => {
+    handleToggleCollapse(task.id);
+  }, [task.id, handleToggleCollapse]);
+
+  return (
+    <div
+      className={`${styles.row} ${selected ? styles.selected : ''}`}
+      style={style}
+      onClick={handleClick}
+      role="row"
+      aria-selected={selected}
+      data-task-id={task.id}
+    >
+      {columns.map((column) => (
+        <GridCell
+          key={column.id}
+          column={column}
+          task={task}
+          onToggleCollapse={column.id === 'title' ? handleCollapse : undefined}
+        />
+      ))}
+    </div>
+  );
+});

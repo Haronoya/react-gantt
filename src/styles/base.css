@@ -1,0 +1,98 @@
+/* Base styles for Gantt chart */
+
+.gantt-root {
+  font-family: var(--gantt-font-family);
+  font-size: var(--gantt-font-size);
+  color: var(--gantt-text);
+  background: var(--gantt-bg);
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.gantt-root *,
+.gantt-root *::before,
+.gantt-root *::after {
+  box-sizing: border-box;
+}
+
+/* Focus styles */
+.gantt-root :focus-visible {
+  outline: 2px solid var(--gantt-focus-ring);
+  outline-offset: var(--gantt-focus-ring-offset);
+}
+
+.gantt-root :focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Scrollbar styles */
+.gantt-root ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.gantt-root ::-webkit-scrollbar-track {
+  background: var(--gantt-scrollbar-track);
+  border-radius: 4px;
+}
+
+.gantt-root ::-webkit-scrollbar-thumb {
+  background: var(--gantt-scrollbar-thumb);
+  border-radius: 4px;
+}
+
+.gantt-root ::-webkit-scrollbar-thumb:hover {
+  background: var(--gantt-scrollbar-thumb-hover);
+}
+
+.gantt-root ::-webkit-scrollbar-corner {
+  background: var(--gantt-scrollbar-track);
+}
+
+/* Firefox scrollbar */
+.gantt-root * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gantt-scrollbar-thumb) var(--gantt-scrollbar-track);
+}
+
+/* Selection */
+.gantt-root ::selection {
+  background: var(--gantt-selection-bg);
+}
+
+/* Screen reader only */
+.gantt-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Prevent text selection during drag */
+.gantt-root.gantt-dragging {
+  user-select: none;
+  cursor: grabbing !important;
+}
+
+.gantt-root.gantt-dragging * {
+  cursor: grabbing !important;
+}
+
+/* Resize cursor */
+.gantt-resize-handle {
+  cursor: ew-resize;
+}
+
+/* Move cursor */
+.gantt-move-handle {
+  cursor: grab;
+}
+
+.gantt-move-handle:active {
+  cursor: grabbing;
+}
