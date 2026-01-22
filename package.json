@@ -28,6 +28,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:demo": "vite build --mode demo",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",

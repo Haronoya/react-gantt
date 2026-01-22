@@ -137,5 +137,10 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Demo build output
+demo-dist
+
+# Project docs (not for npm)
 CLAUDE.md
 FEATURE_ADDITIONS.md

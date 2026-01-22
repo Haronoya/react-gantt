@@ -1,10 +1,276 @@
 # @haro/react-gantt
 
+[![npm version](https://img.shields.io/npm/v/@haro/react-gantt.svg)](https://www.npmjs.com/package/@haro/react-gantt)
+[![npm downloads](https://img.shields.io/npm/dm/@haro/react-gantt.svg)](https://www.npmjs.com/package/@haro/react-gantt)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@haro/react-gantt)](https://bundlephobia.com/package/@haro/react-gantt)
+[![license](https://img.shields.io/npm/l/@haro/react-gantt.svg)](https://github.com/Haronoya/react-gantt/blob/main/LICENSE)
+
+**High-performance React Gantt chart library optimized for 10,000+ tasks.**
+
+A feature-rich, virtualized Gantt chart component for React with TypeScript support. Handles massive datasets smoothly while providing an intuitive drag-and-drop interface.
+
+[日本語ドキュメント](#日本語ドキュメント)
+
+## Why @haro/react-gantt?
+
+- **Built for scale** - Virtual scrolling handles 10,000+ tasks smoothly
+- **Resource view** - Display tasks by person/equipment, not just by task
+- **Full dependency types** - FS, SS, FF, SF with visual arrows
+- **Minimal footprint** - Only 1 runtime dependency (@tanstack/react-virtual)
+- **TypeScript-first** - Complete type definitions included
+- **Modern React** - Supports React 18 and 19
+
+## Features
+
+- **🚀 High Performance** - Virtual scrolling handles 10,000+ tasks at 60fps
+- **📊 Dual View Modes** - Task view and Resource view (who's doing what)
+- **🔗 Dependencies** - FS, SS, FF, SF with visual arrows
+- **🎯 Drag & Drop** - Move, resize, and reorder tasks
+- **📅 Zoom Levels** - Hour, Day, Week, Month
+- **🎨 Customizable** - CSS variables, custom renderers, column definitions
+- **📦 Lightweight** - Only 1 dependency (@tanstack/react-virtual)
+- **💪 TypeScript** - Full type definitions included
+- **⚛️ Modern React** - Supports React 18 and 19
+
+## Installation
+
+```bash
+npm install @haro/react-gantt
+# or
+yarn add @haro/react-gantt
+# or
+pnpm add @haro/react-gantt
+```
+
+## Quick Start
+
+```tsx
+import { Gantt, type Task } from '@haro/react-gantt';
+import '@haro/react-gantt/styles.css';
+
+const tasks: Task[] = [
+  {
+    id: '1',
+    title: 'Planning',
+    start: Date.now(),
+    end: Date.now() + 7 * 24 * 60 * 60 * 1000,
+    progress: 0.5,
+  },
+  {
+    id: '2',
+    title: 'Development',
+    start: Date.now() + 7 * 24 * 60 * 60 * 1000,
+    end: Date.now() + 21 * 24 * 60 * 60 * 1000,
+    progress: 0,
+  },
+  {
+    id: '3',
+    title: 'Release',
+    start: Date.now() + 21 * 24 * 60 * 60 * 1000,
+    end: Date.now() + 21 * 24 * 60 * 60 * 1000,
+    type: 'milestone',
+  },
+];
+
+function App() {
+  const [taskList, setTaskList] = useState(tasks);
+
+  return (
+    <div style={{ height: '500px' }}>
+      <Gantt
+        tasks={taskList}
+        view={{ zoom: 'day' }}
+        editable
+        onTaskChange={(patch) => {
+          setTaskList(prev =>
+            prev.map(t => t.id === patch.id ? { ...t, ...patch.changes } : t)
+          );
+        }}
+      />
+    </div>
+  );
+}
+```
+
+## Core Concepts
+
+### Task Types
+
+```typescript
+interface Task {
+  id: string;                              // Unique identifier
+  title: string;                           // Display name
+  start: number | Date;                    // Start timestamp
+  end: number | Date;                      // End timestamp
+  type?: 'task' | 'milestone' | 'group';   // Task type
+  progress?: number;                       // 0 to 1
+  parentId?: string;                       // For hierarchy (WBS)
+  resourceId?: string;                     // For resource view
+  collapsed?: boolean;                     // Collapse children
+  deadline?: number;                       // Deadline marker
+  segments?: TaskSegment[];                // Composite task bar
+  style?: {
+    color?: string;
+    progressColor?: string;
+    barClass?: string;
+  };
+}
+```
+
+### Zoom Levels
+
+| Level | Display | Best for |
+|-------|---------|----------|
+| `hour` | Hours | Daily schedules |
+| `day` | Days | Weekly planning |
+| `week` | Weeks | Monthly overview |
+| `month` | Months | Quarterly/yearly view |
+
+### Resource View
+
+Display tasks grouped by resource (person, equipment, etc.):
+
+```tsx
+const resources = [
+  { id: 'r1', name: 'Alice', group: 'Dev Team' },
+  { id: 'r2', name: 'Bob', group: 'Dev Team' },
+];
+
+const tasks = [
+  { id: '1', title: 'Task A', resourceId: 'r1', ... },
+  { id: '2', title: 'Task B', resourceId: 'r1', ... },  // Same resource
+  { id: '3', title: 'Task C', resourceId: 'r2', ... },
+];
+
+<Gantt
+  tasks={tasks}
+  resources={resources}
+  resourceMode={true}
+  resourceGroupBy="group"
+/>
+```
+
+### Dependencies
+
+```tsx
+const dependencies = [
+  { id: 'd1', fromTaskId: '1', toTaskId: '2', type: 'FS' },  // Finish-to-Start
+  { id: 'd2', fromTaskId: '2', toTaskId: '3', type: 'SS' },  // Start-to-Start
+];
+
+<Gantt
+  tasks={tasks}
+  dependencies={dependencies}
+  showDependencies={true}
+  highlightDependencies={true}
+/>
+```
+
+### Markers & Non-Working Time
+
+```tsx
+<Gantt
+  tasks={tasks}
+  markers={[
+    { id: 'm1', timestamp: releaseDate, label: 'Release', color: '#f44336' }
+  ]}
+  showTaskDeadlines={true}
+  nonWorkingPeriods={[
+    { id: 'h1', start: holidayStart, end: holidayEnd, type: 'holiday' }
+  ]}
+  workingHours={{ start: '09:00', end: '18:00', daysOfWeek: [1,2,3,4,5] }}
+  highlightWeekends={true}
+/>
+```
+
+## Props Reference
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `tasks` | `Task[]` | required | Task data |
+| `columns` | `ColumnDef[]` | default cols | Grid column definitions |
+| `view` | `ViewConfig` | - | Zoom level and date range |
+| `editable` | `boolean` | `true` | Enable drag/resize |
+| `rowHeight` | `number` | `36` | Row height in pixels |
+| `gridWidth` | `number` | `300` | Grid panel width |
+| `showGrid` | `boolean` | `true` | Show left grid panel |
+| `fitToContainer` | `boolean` | `false` | Auto-fit to container width |
+| `syncParentDates` | `boolean` | `false` | Sync parent dates with children |
+| `locale` | `string` | `'ja-JP'` | Date format locale |
+| `resources` | `Resource[]` | - | Resource definitions |
+| `resourceMode` | `boolean` | `false` | Enable resource view |
+| `dependencies` | `Dependency[]` | - | Task dependencies |
+| `markers` | `Marker[]` | - | Global timeline markers |
+| `onTaskChange` | `function` | - | Task change callback |
+| `onSelectionChange` | `function` | - | Selection change callback |
+| `onTaskClick` | `function` | - | Task click callback |
+
+## Styling
+
+Customize with CSS variables:
+
+```css
+.my-gantt {
+  --gantt-bg: #ffffff;
+  --gantt-text: #333333;
+  --gantt-border: #e0e0e0;
+  --gantt-task-bg: #42a5f5;
+  --gantt-task-progress: #1976d2;
+  --gantt-milestone-bg: #ff9800;
+  --gantt-today-line: #f44336;
+  --gantt-row-height: 36px;
+}
+
+/* Dark mode */
+[data-theme="dark"] .my-gantt {
+  --gantt-bg: #1a1a2e;
+  --gantt-text: #e0e0e0;
+  --gantt-border: #333;
+}
+```
+
+## Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) first.
+
+```bash
+# Clone the repo
+git clone https://github.com/Haronoya/react-gantt.git
+cd react-gantt
+
+# Install dependencies
+npm install
+
+# Start dev server
+npm run dev
+
+# Run tests
+npm test
+
+# Build
+npm run build
+```
+
+## License
+
+MIT © [Haro](https://github.com/Haronoya)
+
+---
+
+# 日本語ドキュメント
+
 高性能なReact用ガントチャートライブラリ。10,000タスクでもスムーズに動作します。
 
 ## 特徴
 
-- **高性能**: 仮想スクロールによる大規模データ対応
+- **高性能**: 仮想スクロールによる大規模データ対応（10,000タスク以上でも60fps）
 - **柔軟なズーム**: 時間/日/週/月の4段階
 - **ドラッグ操作**: タスクの移動・リサイズ
 - **依存関係線**: タスク間の依存関係を矢印で表示（FS/SS/FF/SF）

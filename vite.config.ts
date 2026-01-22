@@ -3,7 +3,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
 
-export default defineConfig(({ command }) => {
+export default defineConfig(({ command, mode }) => {
   // Development mode - serve demo app
   if (command === 'serve') {
     return {
@@ -13,6 +13,24 @@ export default defineConfig(({ command }) => {
         alias: {
           '@': resolve(__dirname, 'src'),
         },
+      },
+    };
+  }
+
+  // Demo build mode - build demo for GitHub Pages
+  if (mode === 'demo') {
+    return {
+      plugins: [react()],
+      root: 'demo',
+      base: '/react-gantt/',
+      resolve: {
+        alias: {
+          '@': resolve(__dirname, 'src'),
+        },
+      },
+      build: {
+        outDir: resolve(__dirname, 'demo-dist'),
+        emptyOutDir: true,
       },
     };
   }
