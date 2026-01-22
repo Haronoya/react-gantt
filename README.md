@@ -9,7 +9,7 @@
 
 A feature-rich, virtualized Gantt chart component for React with TypeScript support. Handles massive datasets smoothly while providing an intuitive drag-and-drop interface.
 
-[日本語ドキュメント](#日本語ドキュメント)
+[日本語ドキュメント](#日本語ドキュメント) | [Live Demo](https://haronoya.github.io/react-gantt/)
 
 ## Why @haro/react-gantt?
 
