@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, forwardRef } from 'react';
+import { memo, forwardRef, useCallback } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useGanttContext } from '../../context';
 import { GridHeader } from './GridHeader';
@@ -33,10 +33,22 @@ export const Grid = memo(
     // Determine row count based on mode
     const rowCount = resourceMode ? resourceRows.length : visibleTasks.length;
 
+    // Variable row height for stacked tasks in resource mode
+    const getRowHeight = useCallback(
+      (index: number) => {
+        if (!resourceMode) return rowHeight;
+        const row = resourceRows[index];
+        if (!row || row.isGroupHeader) return rowHeight;
+        const stackLevels = row.stackLevels || 1;
+        return rowHeight * stackLevels;
+      },
+      [resourceMode, resourceRows, rowHeight]
+    );
+
     const virtualizer = useVirtualizer({
       count: rowCount,
       getScrollElement: () => parentRef.current,
-      estimateSize: () => rowHeight,
+      estimateSize: getRowHeight,
       overscan: 5,
     });
 
@@ -57,7 +69,7 @@ export const Grid = memo(
             style={{ height: totalHeight }}
           >
             {resourceMode ? (
-              // Resource mode: render resource rows
+              // Resource mode: render resource rows with variable height
               virtualItems.map((virtualRow) => {
                 const resourceRow = resourceRows[virtualRow.index];
                 const isDropTarget = isDragging && targetRowIndex === virtualRow.index;
@@ -66,7 +78,7 @@ export const Grid = memo(
                   top: 0,
                   left: 0,
                   width: '100%',
-                  height: rowHeight,
+                  height: virtualRow.size,
                   transform: `translateY(${virtualRow.start}px)`,
                 };
 

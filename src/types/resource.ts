@@ -57,4 +57,6 @@ export interface ResourceRowData {
   groupStart?: number;
   /** Group period end (for group headers) */
   groupEnd?: number;
+  /** Number of stack levels for overlapping tasks (1 = no overlap) */
+  stackLevels?: number;
 }

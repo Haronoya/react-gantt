@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useMemo, type MouseEvent as ReactMouseEvent } from 'react';
+import { memo, useMemo, useCallback, type MouseEvent as ReactMouseEvent } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useGanttContext } from '../../context';
 import { TaskBar } from '../TaskBar';
@@ -88,12 +88,28 @@ export const TimelineBody = memo(function TimelineBody({
     rowHeight,
   });
 
+  // Calculate cumulative row tops for variable height rows in resource mode
+  const rowTops = useMemo(() => {
+    if (!resourceMode) return new Map<number, number>();
+    const tops = new Map<number, number>();
+    let cumulativeTop = 0;
+    resourceRows.forEach((row, index) => {
+      tops.set(index, cumulativeTop);
+      const stackLevels = row.stackLevels || 1;
+      const currentRowHeight = row.isGroupHeader ? rowHeight : rowHeight * stackLevels;
+      cumulativeTop += currentRowHeight;
+    });
+    return tops;
+  }, [resourceMode, resourceRows, rowHeight]);
+
   // Calculate positions for resource mode (tasks positioned based on resource row index)
   // Also handles stacking of overlapping tasks within the same resource row
+  // Task bar height remains constant, row height expands to accommodate stacking
   const resourceModePositions = useMemo(() => {
     if (!resourceMode) return new Map<string, TaskPosition>();
 
     const posMap = new Map<string, TaskPosition>();
+    const barHeight = rowHeight * DEFAULT_BAR_HEIGHT_RATIO;
 
     resourceRows.forEach((resourceRow, rowIndex) => {
       if (resourceRow.isGroupHeader || !resourceRow.resource) return;
@@ -126,10 +142,10 @@ export const TimelineBody = memo(function TimelineBody({
         taskLevels.set(task.id, level);
       });
 
-      // Calculate max levels for this resource row
-      const maxLevels = Math.max(1, endTimes.length);
-      const stackedBarHeight = rowHeight * DEFAULT_BAR_HEIGHT_RATIO / maxLevels;
-      const rowTop = rowIndex * rowHeight;
+      // Get row top from cumulative tops
+      const rowTop = rowTops.get(rowIndex) || 0;
+      // Offset from top of row to center the bar vertically in its lane
+      const laneOffset = (rowHeight - barHeight) / 2;
 
       resourceTasks.forEach((task) => {
         const isMilestone = task.type === 'milestone' || task.start === task.end;
@@ -144,12 +160,11 @@ export const TimelineBody = memo(function TimelineBody({
             rowHeight,
             DEFAULT_BAR_HEIGHT_RATIO
           );
-          // Adjust position for stacking
-          const stackOffset = (rowHeight - rowHeight * DEFAULT_BAR_HEIGHT_RATIO) / 2;
+          // Position in the stacked lane, bar height remains constant
           posMap.set(task.id, {
             ...basePos,
-            top: rowTop + stackOffset + level * stackedBarHeight,
-            height: stackedBarHeight,
+            top: rowTop + laneOffset + level * rowHeight,
+            height: barHeight,
           });
         } else {
           const basePos = calculateTaskPosition(
@@ -161,19 +176,18 @@ export const TimelineBody = memo(function TimelineBody({
             rowHeight,
             DEFAULT_BAR_HEIGHT_RATIO
           );
-          // Adjust position for stacking
-          const stackOffset = (rowHeight - rowHeight * DEFAULT_BAR_HEIGHT_RATIO) / 2;
+          // Position in the stacked lane, bar height remains constant
           posMap.set(task.id, {
             ...basePos,
-            top: rowTop + stackOffset + level * stackedBarHeight,
-            height: stackedBarHeight,
+            top: rowTop + laneOffset + level * rowHeight,
+            height: barHeight,
           });
         }
       });
     });
 
     return posMap;
-  }, [resourceMode, resourceRows, getTasksForResource, viewStart, zoomConfig, rowHeight]);
+  }, [resourceMode, resourceRows, getTasksForResource, viewStart, zoomConfig, rowHeight, rowTops]);
 
   // Use the appropriate positions based on mode
   const positions = resourceMode ? resourceModePositions : taskModePositions;
@@ -181,11 +195,23 @@ export const TimelineBody = memo(function TimelineBody({
   // Determine row count based on mode
   const rowCount = resourceMode ? resourceRows.length : visibleTasks.length;
 
+  // Calculate row height for each row (resource mode may have variable heights due to stacking)
+  const getRowHeight = useCallback(
+    (index: number) => {
+      if (!resourceMode) return rowHeight;
+      const row = resourceRows[index];
+      if (!row || row.isGroupHeader) return rowHeight;
+      const stackLevels = row.stackLevels || 1;
+      return rowHeight * stackLevels;
+    },
+    [resourceMode, resourceRows, rowHeight]
+  );
+
   // Virtual row rendering
   const virtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => rowHeight,
+    estimateSize: getRowHeight,
     overscan: 5,
   });
 

@@ -79,6 +79,42 @@ export function useResourceLayout(
     return map;
   }, [tasks]);
 
+  // Calculate stack levels for each resource (number of overlapping task lanes)
+  const stackLevelsByResource = useMemo(() => {
+    const map = new Map<string, number>();
+    tasksByResource.forEach((resourceTasks, resourceId) => {
+      if (resourceTasks.length <= 1) {
+        map.set(resourceId, 1);
+        return;
+      }
+
+      // Sort tasks by start time
+      const sortedTasks = [...resourceTasks].sort((a, b) => a.start - b.start);
+
+      // Calculate max overlapping level
+      const endTimes: number[] = [];
+      sortedTasks.forEach((task) => {
+        let level = 0;
+        for (let i = 0; i < endTimes.length; i++) {
+          if (endTimes[i] <= task.start) {
+            level = i;
+            endTimes[i] = task.end;
+            break;
+          }
+          level = i + 1;
+        }
+        if (level >= endTimes.length) {
+          endTimes.push(task.end);
+        } else {
+          endTimes[level] = task.end;
+        }
+      });
+
+      map.set(resourceId, Math.max(1, endTimes.length));
+    });
+    return map;
+  }, [tasksByResource]);
+
   // Get tasks for a specific resource
   const getTasksForResource = useCallback(
     (resourceId: string): NormalizedTask[] => {
@@ -153,6 +189,7 @@ export function useResourceLayout(
               isGroupHeader: false,
               depth: 1,
               visible: true,
+              stackLevels: stackLevelsByResource.get(resource.id) || 1,
             });
           });
         }
@@ -167,6 +204,7 @@ export function useResourceLayout(
           isGroupHeader: false,
           depth: 0,
           visible: true,
+          stackLevels: stackLevelsByResource.get(resource.id) || 1,
         });
       });
     } else {
@@ -179,12 +217,13 @@ export function useResourceLayout(
           isGroupHeader: false,
           depth: 0,
           visible: true,
+          stackLevels: stackLevelsByResource.get(resource.id) || 1,
         });
       });
     }
 
     return result;
-  }, [resources, tasksByResource, groupBy, showEmptyResources, collapsedGroups]);
+  }, [resources, tasksByResource, groupBy, showEmptyResources, collapsedGroups, stackLevelsByResource]);
 
   // Build task ID to row index mapping
   const taskRowMap = useMemo(() => {

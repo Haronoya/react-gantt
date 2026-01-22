@@ -1,6 +1,6 @@
 {
   "name": "@haro/react-gantt",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "High-performance React Gantt chart library",
   "type": "module",
   "main": "./dist/index.cjs",
