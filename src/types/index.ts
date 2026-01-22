@@ -1,4 +1,4 @@
-import type { ComponentType, CSSProperties, ReactNode } from 'react';
+import type { ComponentType, CSSProperties, ReactNode, MouseEvent } from 'react';
 import type { Task, NormalizedTask } from './task';
 import type { ColumnDef } from './column';
 import type { ViewConfig } from './view';
@@ -12,6 +12,10 @@ import type {
   OnViewChange,
   SelectionState,
 } from './events';
+import type { Marker } from './marker';
+import type { Dependency } from './dependency';
+import type { NonWorkingPeriod, WorkingHours } from './nonWorkingTime';
+import type { Resource } from './resource';
 
 // Re-export to suppress unused warnings
 export type { Task, NormalizedTask, ColumnDef, ViewConfig };
@@ -20,6 +24,12 @@ export * from './task';
 export * from './column';
 export * from './view';
 export * from './events';
+export * from './marker';
+export * from './segment';
+export * from './dependency';
+export * from './nonWorkingTime';
+export * from './capacity';
+export * from './resource';
 
 /**
  * Props for custom task bar renderer
@@ -116,4 +126,54 @@ export interface GanttProps {
 
   // Custom renderers
   renderers?: GanttRenderers;
+
+  // Marker-related props
+  /** Global markers displayed across all rows */
+  markers?: Marker[];
+  /** Whether to show task deadline markers (default: true when deadline is set) */
+  showTaskDeadlines?: boolean;
+  /** Default color for deadline markers */
+  deadlineColor?: string;
+  /** Called when a marker is clicked */
+  onMarkerClick?: (marker: Marker, event: MouseEvent) => void;
+
+  // Related task highlighting
+  /** Whether to highlight related tasks when a task is selected (default: false) */
+  highlightRelatedTasks?: boolean;
+
+  // Dependency props
+  /** Task dependencies array */
+  dependencies?: Dependency[];
+  /** Whether to show dependency lines (default: true when dependencies are provided) */
+  showDependencies?: boolean;
+  /** Whether to highlight dependencies for selected tasks (default: true) */
+  highlightDependencies?: boolean;
+  /** Called when a dependency line is clicked */
+  onDependencyClick?: (dependency: Dependency, event: MouseEvent) => void;
+
+  // Non-working time props
+  /** Non-working periods to display as grayed out */
+  nonWorkingPeriods?: NonWorkingPeriod[];
+  /** Working hours configuration (auto-generates non-working time) */
+  workingHours?: WorkingHours;
+  /** Whether to show non-working time (default: true when periods or workingHours provided) */
+  showNonWorkingTime?: boolean;
+  /** Whether to highlight weekends (default: true) */
+  highlightWeekends?: boolean;
+
+  // Resource view props
+  /** Resource list for resource view mode */
+  resources?: Resource[];
+  /** Enable resource view mode (default: false) */
+  resourceMode?: boolean;
+  /** Group resources by this field (e.g., 'group') */
+  resourceGroupBy?: string;
+  /** Row height for resource rows in pixels */
+  resourceRowHeight?: number;
+  /** Show resources with no assigned tasks (default: true) */
+  showEmptyResources?: boolean;
+  /** Called when a resource row is clicked */
+  onResourceClick?: (resource: Resource, event: MouseEvent) => void;
+  /** Called when a resource row is double-clicked */
+  onResourceDoubleClick?: (resource: Resource, event: MouseEvent) => void;
 }

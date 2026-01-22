@@ -7,11 +7,15 @@ interface UseSelectionOptions {
   tasks: NormalizedTask[];
   selection: SelectionState;
   onSelectionChange?: (selection: SelectionState) => void;
+  /** Enable related task highlighting based on groupId */
+  highlightRelated?: boolean;
 }
 
 interface UseSelectionResult {
   selectedIds: Set<string>;
+  relatedIds: Set<string>;
   isSelected: (taskId: string) => boolean;
+  isRelated: (taskId: string) => boolean;
   handleSelect: (taskId: string, event: { ctrlKey: boolean; metaKey: boolean; shiftKey: boolean }) => void;
   selectAll: () => void;
   clearSelection: () => void;
@@ -25,12 +29,62 @@ export function useSelection({
   tasks,
   selection,
   onSelectionChange,
+  highlightRelated = false,
 }: UseSelectionOptions): UseSelectionResult {
   const selectedIds = useMemo(() => new Set(selection.ids), [selection.ids]);
+
+  // Compute related task IDs based on groupId and relatedTaskIds
+  const relatedIds = useMemo(() => {
+    if (!highlightRelated || selection.ids.length === 0) {
+      return new Set<string>();
+    }
+
+    const related = new Set<string>();
+
+    selection.ids.forEach((selectedId) => {
+      const selectedTask = tasks.find((t) => t.id === selectedId);
+      if (!selectedTask) return;
+
+      // Add tasks with same groupId
+      if (selectedTask.groupId) {
+        tasks.forEach((t) => {
+          if (t.groupId === selectedTask.groupId && t.id !== selectedId) {
+            related.add(t.id);
+          }
+        });
+      }
+
+      // Add explicitly related tasks
+      if (selectedTask.relatedTaskIds) {
+        selectedTask.relatedTaskIds.forEach((relatedId) => {
+          if (relatedId !== selectedId) {
+            related.add(relatedId);
+          }
+        });
+      }
+
+      // Check if other tasks reference this task
+      tasks.forEach((t) => {
+        if (t.relatedTaskIds?.includes(selectedId) && t.id !== selectedId) {
+          related.add(t.id);
+        }
+      });
+    });
+
+    // Remove selected tasks from related (they're already highlighted as selected)
+    selection.ids.forEach((id) => related.delete(id));
+
+    return related;
+  }, [tasks, selection.ids, highlightRelated]);
 
   const isSelected = useCallback(
     (taskId: string) => selectedIds.has(taskId),
     [selectedIds]
+  );
+
+  const isRelated = useCallback(
+    (taskId: string) => relatedIds.has(taskId),
+    [relatedIds]
   );
 
   const handleSelect = useCallback(
@@ -118,7 +172,9 @@ export function useSelection({
 
   return {
     selectedIds,
+    relatedIds,
     isSelected,
+    isRelated,
     handleSelect,
     selectAll,
     clearSelection,

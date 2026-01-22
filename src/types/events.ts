@@ -10,6 +10,8 @@ export interface SelectionState {
   ids: string[];
   /** Anchor task for range selection */
   anchor?: string;
+  /** Related task IDs (computed, for highlighting) */
+  relatedIds?: string[];
 }
 
 /**

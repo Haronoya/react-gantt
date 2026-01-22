@@ -16,6 +16,16 @@
   box-shadow: 0 0 0 2px var(--gantt-selection-border);
 }
 
+.taskBar.related {
+  outline: 2px dashed var(--gantt-related-color);
+  outline-offset: 2px;
+  opacity: 0.85;
+}
+
+.taskBar.related:hover {
+  opacity: 1;
+}
+
 .taskBar.dragging {
   opacity: 0.8;
   z-index: var(--gantt-z-dragging);
@@ -161,4 +171,35 @@
   border: 2px dashed var(--gantt-drag-preview-border);
   border-radius: var(--gantt-bar-radius);
   pointer-events: none;
+}
+
+/* Segmented task bar */
+.segmented {
+  background: transparent;
+  overflow: hidden;
+}
+
+.segment {
+  pointer-events: none;
+}
+
+.segmentFirst {
+  border-top-left-radius: var(--gantt-bar-radius);
+  border-bottom-left-radius: var(--gantt-bar-radius);
+}
+
+.segmentLast {
+  border-top-right-radius: var(--gantt-bar-radius);
+  border-bottom-right-radius: var(--gantt-bar-radius);
+}
+
+/* Progress overlay for segmented tasks */
+.taskProgressOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: var(--gantt-bar-radius) 0 0 var(--gantt-bar-radius);
 }

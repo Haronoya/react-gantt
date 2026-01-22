@@ -14,6 +14,7 @@ interface TaskBarProps {
   height: number;
   isSelected: boolean;
   isDragging: boolean;
+  isRelated?: boolean;
 }
 
 export const TaskBar = memo(function TaskBar(props: TaskBarProps) {

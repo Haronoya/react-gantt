@@ -71,6 +71,36 @@
   --gantt-focus-ring: #1976d2;
   --gantt-focus-ring-offset: 2px;
 
+  /* Markers */
+  --gantt-marker-color: #9c27b0;
+  --gantt-deadline-color: #ff9800;
+  --gantt-deadline-overdue: #f44336;
+  --gantt-marker-label-bg: rgba(0, 0, 0, 0.75);
+  --gantt-marker-label-color: #ffffff;
+
+  /* Related task highlighting */
+  --gantt-related-color: #9c27b0;
+  --gantt-related-bg: rgba(156, 39, 176, 0.1);
+
+  /* Dependency lines */
+  --gantt-dependency-color: #607d8b;
+  --gantt-dependency-highlight: #1976d2;
+  --gantt-dependency-hover: #455a64;
+
+  /* Non-working time */
+  --gantt-nonworking-default: rgba(0, 0, 0, 0.04);
+  --gantt-nonworking-holiday: rgba(0, 0, 0, 0.06);
+  --gantt-nonworking-break: rgba(0, 0, 0, 0.03);
+  --gantt-nonworking-maintenance: rgba(244, 67, 54, 0.06);
+
+  /* Capacity */
+  --gantt-capacity-normal: #4caf50;
+  --gantt-capacity-warning: #ff9800;
+  --gantt-capacity-critical: #f44336;
+  --gantt-capacity-overflow: rgba(244, 67, 54, 0.3);
+  --gantt-capacity-bg: #e0e0e0;
+  --gantt-row-overloaded: rgba(244, 67, 54, 0.05);
+
   /* Sizing */
   --gantt-row-height: 36px;
   --gantt-header-height: 40px;
@@ -104,8 +134,9 @@
   /* Z-index layers */
   --gantt-z-grid: 1;
   --gantt-z-bars: 2;
-  --gantt-z-selected: 3;
-  --gantt-z-dragging: 4;
+  --gantt-z-markers: 3;
+  --gantt-z-selected: 4;
+  --gantt-z-dragging: 5;
   --gantt-z-header: 10;
   --gantt-z-splitter: 20;
   --gantt-z-tooltip: 100;
@@ -159,6 +190,16 @@
   --gantt-scrollbar-track: #2d2d2d;
   --gantt-scrollbar-thumb: #505050;
   --gantt-scrollbar-thumb-hover: #606060;
+
+  /* Non-working time (dark) */
+  --gantt-nonworking-default: rgba(255, 255, 255, 0.03);
+  --gantt-nonworking-holiday: rgba(255, 255, 255, 0.05);
+  --gantt-nonworking-break: rgba(255, 255, 255, 0.02);
+  --gantt-nonworking-maintenance: rgba(244, 67, 54, 0.08);
+
+  /* Capacity (dark) */
+  --gantt-capacity-bg: #404040;
+  --gantt-row-overloaded: rgba(244, 67, 54, 0.1);
 }
 
 /* Compact density */

@@ -13,6 +13,7 @@ interface TaskBarGroupProps {
   height: number;
   isSelected: boolean;
   isDragging: boolean;
+  isRelated?: boolean;
 }
 
 export const TaskBarGroup = memo(function TaskBarGroup({
@@ -23,6 +24,7 @@ export const TaskBarGroup = memo(function TaskBarGroup({
   height,
   isSelected,
   isDragging,
+  isRelated = false,
 }: TaskBarGroupProps) {
   const {
     handleTaskClick,
@@ -71,7 +73,7 @@ export const TaskBarGroup = memo(function TaskBarGroup({
 
   return (
     <div
-      className={`${styles.taskBar} ${styles.group} ${isSelected ? styles.selected : ''} ${isDragging ? styles.dragging : ''} ${task.style?.barClass ?? ''}`}
+      className={`${styles.taskBar} ${styles.group} ${isSelected ? styles.selected : ''} ${isRelated ? styles.related : ''} ${isDragging ? styles.dragging : ''} ${task.style?.barClass ?? ''}`}
       style={{
         left,
         width: Math.max(width, 4),

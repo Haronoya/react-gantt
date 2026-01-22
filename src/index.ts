@@ -16,6 +16,12 @@ export {
   TaskBarGroup,
   Splitter,
   Tooltip,
+  DependencyLine,
+  DependencyLayer,
+  NonWorkingTimeLayer,
+  CapacityBar,
+  ResourceRow,
+  ResourceGroupRow,
 } from './components';
 
 // Hooks (for advanced usage)
@@ -27,6 +33,7 @@ export {
   useTooltip,
   useDrag,
   useTaskPositions,
+  useResourceLayout,
 } from './hooks';
 
 // Context (for advanced usage)
@@ -47,6 +54,29 @@ export type {
   ZoomLevel,
   ZoomConfig,
   ViewConfig,
+  // Marker types
+  Marker,
+  MarkerStyle,
+  TaskMarker,
+  // Segment types
+  TaskSegment,
+  SegmentPattern,
+  // Dependency types
+  Dependency,
+  DependencyType,
+  DependencyStyle,
+  // Non-working time types
+  NonWorkingPeriod,
+  NonWorkingType,
+  WorkingHours,
+  RecurringPattern,
+  // Capacity types
+  CapacityInfo,
+  CapacityConfig,
+  // Resource types
+  Resource,
+  ResourceGroup,
+  ResourceRowData,
   // Event types
   SelectionState,
   OnTaskChange,
@@ -108,4 +138,8 @@ export {
   getTaskById,
   getTaskChildren,
   getDescendantIds,
+  // Capacity utilities
+  calculateCapacity,
+  getCapacityStatusClass,
+  getCapacityColor,
 } from './utils';

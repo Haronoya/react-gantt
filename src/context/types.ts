@@ -33,6 +33,7 @@ export interface GanttContextValue {
 
   // Selection helpers
   isSelected: (taskId: string) => boolean;
+  isRelated: (taskId: string) => boolean;
 
   // Drag state
   isDragging: boolean;

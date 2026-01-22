@@ -1,3 +1,5 @@
+import type { TaskSegment } from './segment';
+
 /**
  * Task type determines visual representation
  */
@@ -41,6 +43,24 @@ export interface Task {
   style?: TaskStyle;
   /** Arbitrary metadata for user extensions */
   meta?: Record<string, unknown>;
+
+  // Marker-related fields
+  /** Task deadline (Unix timestamp in ms) - displays as a marker line */
+  deadline?: number;
+
+  // Segmented task bar
+  /** Segments for composite task bars (total duration must equal end - start) */
+  segments?: TaskSegment[];
+
+  // Related task highlighting
+  /** Group ID for related task highlighting (tasks with same groupId are related) */
+  groupId?: string;
+  /** Explicit list of related task IDs */
+  relatedTaskIds?: string[];
+
+  // Resource assignment (for resource view and capacity calculation)
+  /** ID of the resource this task is assigned to */
+  resourceId?: string;
 }
 
 /**

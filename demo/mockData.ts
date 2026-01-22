@@ -1,4 +1,4 @@
-import type { Task, ColumnDef } from '../src';
+import type { Task, ColumnDef, TaskSegment } from '../src';
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
@@ -60,6 +60,54 @@ export function generateTasks(count: number): Task[] {
         });
       } else {
         // Regular task
+        // Add deadline to some tasks (every 3rd task with a 70% chance of being overdue)
+        const hasDeadline = t % 3 === 0;
+        const isOverdue = Math.random() > 0.3;
+        const deadline = hasDeadline
+          ? taskStart + taskDuration + (isOverdue ? -MS_PER_DAY : MS_PER_DAY * 2)
+          : undefined;
+
+        // Add segments to every 4th task
+        const hasSegments = t % 4 === 1;
+        let segments: TaskSegment[] | undefined;
+
+        if (hasSegments) {
+          const setupDuration = taskDuration * 0.15;
+          const workDuration = taskDuration * 0.7;
+          const bufferDuration = taskDuration * 0.15;
+
+          segments = [
+            {
+              id: `seg-${g}-${t}-setup`,
+              duration: setupDuration,
+              color: '#78909c',
+              label: '準備',
+              type: 'setup',
+              pattern: 'striped',
+            },
+            {
+              id: `seg-${g}-${t}-work`,
+              duration: workDuration,
+              color: color,
+              label: '作業',
+              type: 'work',
+              pattern: 'solid',
+            },
+            {
+              id: `seg-${g}-${t}-buffer`,
+              duration: bufferDuration,
+              color: '#90a4ae',
+              label: 'バッファ',
+              type: 'buffer',
+              pattern: 'dotted',
+            },
+          ];
+        }
+
+        // Assign groupId for related task highlighting (tasks in same group are related)
+        // Create 2-3 groups per project
+        const taskGroupId = t < 3 ? `${groupId}-phase1` : t < 6 ? `${groupId}-phase2` : `${groupId}-phase3`;
+
         tasks.push({
           id: `task-${g}-${t}`,
           title: `タスク ${g + 1}-${t + 1}`,
@@ -69,6 +117,9 @@ export function generateTasks(count: number): Task[] {
           parentId: groupId,
           progress: Math.random(),
           style: { color, progressColor: '#1565c0' },
+          deadline,
+          segments,
+          groupId: taskGroupId,
         });
       }
     }

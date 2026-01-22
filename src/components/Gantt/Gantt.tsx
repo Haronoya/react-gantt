@@ -52,6 +52,19 @@ export const Gantt = memo(function Gantt({
   onViewChange,
   onColumnResize,
   renderers,
+  markers,
+  showTaskDeadlines = true,
+  deadlineColor,
+  onMarkerClick,
+  highlightRelatedTasks = false,
+  dependencies,
+  showDependencies = true,
+  highlightDependencies = true,
+  onDependencyClick,
+  nonWorkingPeriods,
+  workingHours,
+  showNonWorkingTime = true,
+  highlightWeekends = true,
 }: GanttProps) {
   // Grid width state
   const [gridWidth, setGridWidth] = useState(initialGridWidth);
@@ -136,6 +149,55 @@ export const Gantt = memo(function Gantt({
     handleMouseMove: handleTooltipMove,
   } = useTooltip();
 
+  // Related tasks highlighting
+  const relatedIds = useMemo(() => {
+    if (!highlightRelatedTasks || ganttState.selection.ids.length === 0) {
+      return new Set<string>();
+    }
+
+    const related = new Set<string>();
+
+    ganttState.selection.ids.forEach((selectedId) => {
+      const selectedTask = ganttState.visibleTasks.find((t) => t.id === selectedId);
+      if (!selectedTask) return;
+
+      // Add tasks with same groupId
+      if (selectedTask.groupId) {
+        ganttState.visibleTasks.forEach((t) => {
+          if (t.groupId === selectedTask.groupId && t.id !== selectedId) {
+            related.add(t.id);
+          }
+        });
+      }
+
+      // Add explicitly related tasks
+      if (selectedTask.relatedTaskIds) {
+        selectedTask.relatedTaskIds.forEach((relatedId) => {
+          if (relatedId !== selectedId) {
+            related.add(relatedId);
+          }
+        });
+      }
+
+      // Check if other tasks reference this task
+      ganttState.visibleTasks.forEach((t) => {
+        if (t.relatedTaskIds?.includes(selectedId) && t.id !== selectedId) {
+          related.add(t.id);
+        }
+      });
+    });
+
+    // Remove selected tasks from related
+    ganttState.selection.ids.forEach((id) => related.delete(id));
+
+    return related;
+  }, [ganttState.visibleTasks, ganttState.selection.ids, highlightRelatedTasks]);
+
+  const isRelated = useCallback(
+    (taskId: string) => relatedIds.has(taskId),
+    [relatedIds]
+  );
+
   // Event handlers
   const handleTaskClick = useCallback(
     (task: NormalizedTask, event: ReactMouseEvent) => {
@@ -196,6 +258,7 @@ export const Gantt = memo(function Gantt({
 
       // Selection
       isSelected: ganttState.isSelected,
+      isRelated,
 
       // Drag
       isDragging,
@@ -226,6 +289,7 @@ export const Gantt = memo(function Gantt({
       adjustedZoomConfig,
       locale,
       editable,
+      isRelated,
       isDragging,
       getDragPreview,
       handleDragStartWrapper,
@@ -272,7 +336,23 @@ export const Gantt = memo(function Gantt({
 
         {/* Timeline (right panel) */}
         <div className={styles.timelineContainer}>
-          <Timeline ref={timelineRef} onScroll={handleTimelineScroll} />
+          <Timeline
+            ref={timelineRef}
+            onScroll={handleTimelineScroll}
+            markers={markers}
+            showTaskDeadlines={showTaskDeadlines}
+            deadlineColor={deadlineColor}
+            onMarkerClick={onMarkerClick}
+            dependencies={dependencies}
+            showDependencies={showDependencies}
+            highlightDependencies={highlightDependencies}
+            selectedTaskIds={ganttState.selection.ids}
+            onDependencyClick={onDependencyClick}
+            nonWorkingPeriods={nonWorkingPeriods}
+            workingHours={workingHours}
+            showNonWorkingTime={showNonWorkingTime}
+            highlightWeekends={highlightWeekends}
+          />
         </div>
 
         {/* Tooltip */}

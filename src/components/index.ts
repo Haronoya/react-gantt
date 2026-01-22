@@ -1,6 +1,10 @@
 export { Gantt } from './Gantt';
-export { Grid, GridHeader, GridRow, GridCell } from './Grid';
+export { Grid, GridHeader, GridRow, GridCell, ResourceRow, ResourceGroupRow } from './Grid';
 export { Timeline, TimelineHeader, TimelineBody } from './Timeline';
 export { TaskBar, TaskBarTask, TaskBarMilestone, TaskBarGroup } from './TaskBar';
 export { Splitter } from './Splitter';
 export { Tooltip } from './Tooltip';
+export { MarkerLine, GlobalMarkerLayer, TaskDeadlineMarker } from './Markers';
+export { DependencyLine, DependencyLayer } from './Dependencies';
+export { NonWorkingTimeLayer } from './NonWorkingTime';
+export { CapacityBar } from './Capacity';

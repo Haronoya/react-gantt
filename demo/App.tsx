@@ -7,6 +7,8 @@ import {
   type SelectionState,
   type ZoomLevel,
   type ColumnDef,
+  type Marker,
+  type Dependency,
 } from '../src';
 import { sampleTasks, sampleColumns, hourlyTasks, hourlyColumns, generateLargeTasks } from './mockData';
 
@@ -205,6 +207,88 @@ export default function App() {
   const [viewPeriod, setViewPeriod] = useState<ViewPeriod>('all');
   const [fitToContainer, setFitToContainer] = useState(false);
   const [syncParentDates, setSyncParentDates] = useState(false);
+  const [showMarkers, setShowMarkers] = useState(true);
+  const [highlightRelated, setHighlightRelated] = useState(true);
+  const [showDependencies, setShowDependencies] = useState(true);
+
+  // Sample global markers
+  const markers = useMemo((): Marker[] => {
+    const now = Date.now();
+    return [
+      {
+        id: 'release-v1',
+        timestamp: now + MS_PER_DAY * 7,
+        label: 'v1.0 Release',
+        color: '#9c27b0',
+        style: 'solid',
+        showLabel: true,
+        labelPosition: 'top',
+      },
+      {
+        id: 'deadline',
+        timestamp: now + MS_PER_DAY * 14,
+        label: 'Deadline',
+        color: '#f44336',
+        style: 'dashed',
+        showLabel: true,
+        labelPosition: 'top',
+      },
+    ];
+  }, []);
+
+  // Sample dependencies between tasks
+  const dependencies = useMemo((): Dependency[] => {
+    // Only create dependencies if we have tasks from sampleTasks (with group-X-Y format)
+    const hasGroupTasks = tasks.some((t) => t.id.startsWith('task-0-'));
+    if (!hasGroupTasks) return [];
+
+    return [
+      {
+        id: 'dep-1',
+        fromTaskId: 'task-0-0',
+        toTaskId: 'task-0-1',
+        type: 'FS',
+        color: '#607d8b',
+      },
+      {
+        id: 'dep-2',
+        fromTaskId: 'task-0-1',
+        toTaskId: 'task-0-2',
+        type: 'FS',
+        color: '#607d8b',
+      },
+      {
+        id: 'dep-3',
+        fromTaskId: 'task-0-2',
+        toTaskId: 'task-0-3',
+        type: 'SS',
+        color: '#2196f3',
+        style: 'dashed',
+      },
+      {
+        id: 'dep-4',
+        fromTaskId: 'task-0-3',
+        toTaskId: 'task-0-4',
+        type: 'FS',
+        color: '#607d8b',
+      },
+      {
+        id: 'dep-5',
+        fromTaskId: 'task-1-0',
+        toTaskId: 'task-1-1',
+        type: 'FS',
+        color: '#607d8b',
+      },
+      {
+        id: 'dep-6',
+        fromTaskId: 'task-1-1',
+        toTaskId: 'task-1-2',
+        type: 'FF',
+        color: '#ff9800',
+        style: 'dashed',
+      },
+    ];
+  }, [tasks]);
 
   const handleTaskChange = useCallback(
     (patch: TaskPatch, context: ChangeContext) => {
@@ -473,6 +557,36 @@ export default function App() {
           >
             親子連動 {syncParentDates ? 'ON' : 'OFF'}
           </button>
+
+          <button
+            style={{
+              ...styles.buttonToggle,
+              ...(showMarkers ? styles.buttonToggleActive : {}),
+            }}
+            onClick={() => setShowMarkers(!showMarkers)}
+          >
+            マーカー {showMarkers ? 'ON' : 'OFF'}
+          </button>
+
+          <button
+            style={{
+              ...styles.buttonToggle,
+              ...(highlightRelated ? styles.buttonToggleActive : {}),
+            }}
+            onClick={() => setHighlightRelated(!highlightRelated)}
+          >
+            関連ハイライト {highlightRelated ? 'ON' : 'OFF'}
+          </button>
+
+          <button
+            style={{
+              ...styles.buttonToggle,
+              ...(showDependencies ? styles.buttonToggleActive : {}),
+            }}
+            onClick={() => setShowDependencies(!showDependencies)}
+          >
+            依存関係線 {showDependencies ? 'ON' : 'OFF'}
+          </button>
         </div>
 
         {/* Data Section */}
@@ -499,11 +613,19 @@ export default function App() {
           editable={editable}
           fitToContainer={fitToContainer}
           syncParentDates={syncParentDates}
+          markers={showMarkers ? markers : []}
+          showTaskDeadlines={showMarkers}
+          highlightRelatedTasks={highlightRelated}
+          dependencies={showDependencies ? dependencies : []}
+          showDependencies={showDependencies}
+          highlightDependencies={true}
           onTaskChange={handleTaskChange}
           onSelectionChange={handleSelectionChange}
           onColumnResize={handleColumnResize}
           onTaskClick={(task) => console.log('Task clicked:', task)}
           onTaskDoubleClick={(task) => console.log('Task double-clicked:', task)}
+          onMarkerClick={(marker) => console.log('Marker clicked:', marker)}
+          onDependencyClick={(dep) => console.log('Dependency clicked:', dep)}
         />
       </div>
     </div>

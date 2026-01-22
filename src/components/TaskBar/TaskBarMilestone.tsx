@@ -13,6 +13,7 @@ interface TaskBarMilestoneProps {
   height: number;
   isSelected: boolean;
   isDragging: boolean;
+  isRelated?: boolean;
 }
 
 export const TaskBarMilestone = memo(function TaskBarMilestone({
@@ -23,6 +24,7 @@ export const TaskBarMilestone = memo(function TaskBarMilestone({
   height,
   isSelected,
   isDragging,
+  isRelated = false,
 }: TaskBarMilestoneProps) {
   const {
     editable,
@@ -72,7 +74,7 @@ export const TaskBarMilestone = memo(function TaskBarMilestone({
 
   return (
     <div
-      className={`${styles.taskBar} ${styles.milestone} ${isSelected ? styles.selected : ''} ${isDragging ? styles.dragging : ''} ${task.style?.barClass ?? ''}`}
+      className={`${styles.taskBar} ${styles.milestone} ${isSelected ? styles.selected : ''} ${isRelated ? styles.related : ''} ${isDragging ? styles.dragging : ''} ${task.style?.barClass ?? ''}`}
       style={{
         left,
         width,

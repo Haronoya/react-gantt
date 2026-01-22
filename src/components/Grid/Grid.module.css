@@ -177,3 +177,45 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Resource View Styles */
+.rowSelected {
+  background: var(--gantt-row-selected);
+}
+
+.groupRow {
+  background: var(--gantt-header-bg);
+  font-weight: var(--gantt-font-weight-medium);
+}
+
+.groupRow:hover {
+  background: var(--gantt-row-hover);
+}
+
+.groupName {
+  font-weight: var(--gantt-font-weight-medium);
+  color: var(--gantt-text);
+}
+
+.resourceCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.resourceName {
+  font-size: var(--gantt-font-size);
+  color: var(--gantt-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resourceCode {
+  font-size: var(--gantt-font-size-small);
+  color: var(--gantt-text-muted);
+  flex-shrink: 0;
+}

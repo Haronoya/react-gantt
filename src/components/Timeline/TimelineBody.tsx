@@ -1,10 +1,16 @@
 'use client';
 
-import { memo, useMemo } from 'react';
+import { memo, useMemo, type MouseEvent as ReactMouseEvent } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useGanttContext } from '../../context';
 import { TaskBar } from '../TaskBar';
 import { useTaskPositions } from '../../hooks';
+import { GlobalMarkerLayer, TaskDeadlineMarker } from '../Markers';
+import { DependencyLayer } from '../Dependencies';
+import { NonWorkingTimeLayer } from '../NonWorkingTime';
+import type { Marker } from '../../types/marker';
+import type { Dependency } from '../../types/dependency';
+import type { NonWorkingPeriod, WorkingHours } from '../../types/nonWorkingTime';
 import {
   timestampToPixel,
   calculateTimelineWidth,
@@ -22,11 +28,37 @@ import styles from './Timeline.module.css';
 interface TimelineBodyProps {
   scrollRef: React.RefObject<HTMLDivElement>;
   onScroll?: (e: React.UIEvent) => void;
+  markers?: Marker[];
+  showTaskDeadlines?: boolean;
+  deadlineColor?: string;
+  onMarkerClick?: (marker: Marker, event: ReactMouseEvent) => void;
+  dependencies?: Dependency[];
+  showDependencies?: boolean;
+  highlightDependencies?: boolean;
+  selectedTaskIds?: string[];
+  onDependencyClick?: (dependency: Dependency, event: ReactMouseEvent) => void;
+  nonWorkingPeriods?: NonWorkingPeriod[];
+  workingHours?: WorkingHours;
+  showNonWorkingTime?: boolean;
+  highlightWeekends?: boolean;
 }
 
 export const TimelineBody = memo(function TimelineBody({
   scrollRef,
   onScroll,
+  markers,
+  showTaskDeadlines = true,
+  deadlineColor,
+  onMarkerClick,
+  dependencies,
+  showDependencies = true,
+  highlightDependencies = true,
+  selectedTaskIds = [],
+  onDependencyClick,
+  nonWorkingPeriods,
+  workingHours,
+  showNonWorkingTime = true,
+  highlightWeekends = true,
 }: TimelineBodyProps) {
   const {
     visibleTasks,
@@ -35,6 +67,7 @@ export const TimelineBody = memo(function TimelineBody({
     viewEnd,
     rowHeight,
     isSelected,
+    isRelated,
     isDragging,
     getDragPreview,
     zoom,
@@ -150,6 +183,19 @@ export const TimelineBody = memo(function TimelineBody({
           height: totalHeight,
         }}
       >
+        {/* Non-working time layer (background) */}
+        {showNonWorkingTime && (
+          <NonWorkingTimeLayer
+            periods={nonWorkingPeriods}
+            workingHours={workingHours}
+            viewStart={viewStart}
+            viewEnd={viewEnd}
+            zoomConfig={zoomConfig}
+            containerHeight={totalHeight}
+            highlightWeekends={highlightWeekends}
+          />
+        )}
+
         {/* Grid lines */}
         <div className={styles.gridLines}>
           {gridLines.map((line, i) => (
@@ -230,11 +276,60 @@ export const TimelineBody = memo(function TimelineBody({
                 top={virtualRow.start + (rowHeight - position.height) / 2}
                 height={position.height}
                 isSelected={isSelected(task.id)}
+                isRelated={isRelated(task.id)}
                 isDragging={isDragging && getDragPreview(task.id) !== null}
               />
             );
           })}
         </div>
+
+        {/* Task deadline markers */}
+        {showTaskDeadlines && (
+          <div className={styles.deadlineMarkerLayer}>
+            {virtualItems.map((virtualRow) => {
+              const task = visibleTasks[virtualRow.index];
+              if (!task.deadline) return null;
+
+              return (
+                <TaskDeadlineMarker
+                  key={`deadline-${task.id}`}
+                  task={task}
+                  viewStart={viewStart}
+                  viewEnd={viewEnd}
+                  zoomConfig={zoomConfig}
+                  rowTop={virtualRow.start}
+                  rowHeight={rowHeight}
+                  deadlineColor={deadlineColor}
+                  onMarkerClick={onMarkerClick}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {/* Global markers */}
+        {markers && markers.length > 0 && (
+          <GlobalMarkerLayer
+            markers={markers}
+            viewStart={viewStart}
+            viewEnd={viewEnd}
+            zoomConfig={zoomConfig}
+            containerHeight={totalHeight}
+            headerHeight={0}
+            onMarkerClick={onMarkerClick}
+          />
+        )}
+
+        {/* Dependency lines */}
+        {showDependencies && dependencies && dependencies.length > 0 && (
+          <DependencyLayer
+            dependencies={dependencies}
+            positions={positions}
+            selectedTaskIds={selectedTaskIds}
+            highlightDependencies={highlightDependencies}
+            onDependencyClick={onDependencyClick}
+          />
+        )}
       </div>
     </div>
   );
