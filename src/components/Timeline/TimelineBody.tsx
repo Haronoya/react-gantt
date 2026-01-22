@@ -70,6 +70,7 @@ export const TimelineBody = memo(function TimelineBody({
     isRelated,
     isDragging,
     getDragPreview,
+    targetRowIndex,
     zoom,
   } = useGanttContext();
 
@@ -222,17 +223,20 @@ export const TimelineBody = memo(function TimelineBody({
         )}
 
         {/* Row backgrounds */}
-        {virtualItems.map((virtualRow) => (
-          <div
-            key={`row-bg-${virtualRow.index}`}
-            className={styles.rowBackground}
-            style={{
-              top: virtualRow.start,
-              height: rowHeight,
-              width: timelineWidth,
-            }}
-          />
-        ))}
+        {virtualItems.map((virtualRow) => {
+          const isDropTarget = isDragging && targetRowIndex === virtualRow.index;
+          return (
+            <div
+              key={`row-bg-${virtualRow.index}`}
+              className={`${styles.rowBackground} ${isDropTarget ? styles.dropTarget : ''}`}
+              style={{
+                top: virtualRow.start,
+                height: rowHeight,
+                width: timelineWidth,
+              }}
+            />
+          );
+        })}
 
         {/* Task bars */}
         <div className={styles.tasksContainer}>

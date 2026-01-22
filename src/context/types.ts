@@ -37,7 +37,9 @@ export interface GanttContextValue {
 
   // Drag state
   isDragging: boolean;
-  getDragPreview: (taskId: string) => { start: number; end: number; progress?: number } | null;
+  getDragPreview: (taskId: string) => { start: number; end: number; progress?: number; rowIndex?: number } | null;
+  /** Current target row index during row drag */
+  targetRowIndex: number | null;
 
   // Actions
   handleTaskChange: (patch: TaskPatch, context: ChangeContext) => void;

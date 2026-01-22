@@ -14,7 +14,7 @@ interface GridProps {
 
 export const Grid = memo(
   forwardRef<HTMLDivElement, GridProps>(function Grid({ width, onScroll }, ref) {
-    const { visibleTasks, columns, rowHeight, handleColumnResize } = useGanttContext();
+    const { visibleTasks, columns, rowHeight, handleColumnResize, isDragging, targetRowIndex } = useGanttContext();
 
     const parentRef = ref as React.RefObject<HTMLDivElement>;
 
@@ -43,11 +43,13 @@ export const Grid = memo(
           >
             {virtualItems.map((virtualRow) => {
               const task = visibleTasks[virtualRow.index];
+              const isDropTarget = isDragging && targetRowIndex === virtualRow.index;
               return (
                 <GridRow
                   key={task.id}
                   task={task}
                   columns={columns}
+                  isDropTarget={isDropTarget}
                   style={{
                     position: 'absolute',
                     top: 0,

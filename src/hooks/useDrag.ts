@@ -17,7 +17,11 @@ interface DragState {
   initialStart: number;
   initialEnd: number;
   initialProgress: number;
+  initialRowIndex: number;
+  initialParentId: string | null | undefined;
+  initialResourceId: string | undefined;
   isDragging: boolean;
+  targetRowIndex: number;
 }
 
 interface UseDragOptions {
@@ -25,12 +29,18 @@ interface UseDragOptions {
   zoomConfig: ZoomConfig;
   onTaskChange?: (patch: TaskPatch, context: ChangeContext) => void;
   editable: boolean;
+  rowHeight: number;
+  /** Enable vertical drag to move between rows */
+  enableRowDrag?: boolean;
+  /** Callback to get the target parent/resource ID for a row index */
+  getRowTarget?: (rowIndex: number) => { parentId?: string | null; resourceId?: string | null };
 }
 
 interface DragPreview {
   start: number;
   end: number;
   progress?: number;
+  rowIndex?: number;
 }
 
 interface UseDragResult {
@@ -43,16 +53,21 @@ interface UseDragResult {
     clientY: number
   ) => void;
   isDragging: boolean;
+  /** Current target row index during drag */
+  targetRowIndex: number | null;
 }
 
 /**
- * Hook to manage task drag operations (move, resize, progress)
+ * Hook to manage task drag operations (move, resize, progress, row change)
  */
 export function useDrag({
   tasks,
   zoomConfig,
   onTaskChange,
   editable,
+  rowHeight,
+  enableRowDrag = true,
+  getRowTarget,
 }: UseDragOptions): UseDragResult {
   const [dragState, setDragState] = useState<DragState | null>(null);
   const dragRef = useRef<DragState | null>(null);
@@ -77,6 +92,9 @@ export function useDrag({
       const task = tasks.find((t) => t.id === taskId);
       if (!task) return;
 
+      // Find the task's current row index
+      const rowIndex = tasks.findIndex((t) => t.id === taskId);
+
       setDragState({
         taskId,
         type,
@@ -87,7 +105,11 @@ export function useDrag({
         initialStart: task.start,
         initialEnd: task.end,
         initialProgress: task.progress ?? 0,
+        initialRowIndex: rowIndex,
+        initialParentId: task.parentId,
+        initialResourceId: task.resourceId,
         isDragging: false,
+        targetRowIndex: rowIndex,
       });
     },
     [tasks, editable]
@@ -101,14 +123,25 @@ export function useDrag({
       const deltaY = Math.abs(clientY - prev.startY);
       const isDragging = prev.isDragging || deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD;
 
+      // Calculate target row based on vertical movement (only for 'move' type)
+      let targetRowIndex = prev.targetRowIndex;
+      if (prev.type === 'move' && enableRowDrag) {
+        const verticalDelta = clientY - prev.startY;
+        const rowDelta = Math.round(verticalDelta / rowHeight);
+        targetRowIndex = prev.initialRowIndex + rowDelta;
+        // Clamp to valid row range
+        targetRowIndex = Math.max(0, Math.min(tasks.length - 1, targetRowIndex));
+      }
+
       return {
         ...prev,
         currentX: clientX,
         currentY: clientY,
         isDragging,
+        targetRowIndex,
       };
     });
-  }, []);
+  }, [rowHeight, tasks.length, enableRowDrag]);
 
   const handleDragEnd = useCallback(() => {
     const state = dragRef.current;
@@ -154,13 +187,35 @@ export function useDrag({
       }
     }
 
+    // Check for row change (only for 'move' type)
+    const hasRowChange = enableRowDrag &&
+      state.type === 'move' &&
+      state.targetRowIndex !== state.initialRowIndex;
+
+    // Get target parent/resource for the new row
+    let targetParentId: string | null | undefined = state.initialParentId;
+    let targetResourceId: string | undefined = state.initialResourceId;
+
+    if (hasRowChange && getRowTarget) {
+      const target = getRowTarget(state.targetRowIndex);
+      if (target.parentId !== undefined) {
+        targetParentId = target.parentId;
+      }
+      if (target.resourceId !== undefined) {
+        targetResourceId = target.resourceId ?? undefined;
+      }
+    }
+
     // Only fire change if something actually changed
-    const hasChange =
+    const hasTimeChange =
       newStart !== state.initialStart ||
       newEnd !== state.initialEnd ||
       newProgress !== state.initialProgress;
 
-    if (hasChange) {
+    const hasParentChange = targetParentId !== state.initialParentId;
+    const hasResourceChange = targetResourceId !== state.initialResourceId;
+
+    if (hasTimeChange || hasParentChange || hasResourceChange) {
       const changes: TaskPatch['changes'] = {};
       const previousValues: TaskPatch['previousValues'] = {};
 
@@ -179,14 +234,34 @@ export function useDrag({
         previousValues.progress = state.initialProgress;
       }
 
+      if (hasParentChange) {
+        changes.parentId = targetParentId;
+        previousValues.parentId = state.initialParentId;
+      }
+
+      if (hasResourceChange) {
+        changes.resourceId = targetResourceId;
+        previousValues.resourceId = state.initialResourceId;
+      }
+
       const contextType: ChangeContext['type'] =
-        state.type === 'move'
-          ? 'drag-move'
-          : state.type === 'resize-start'
-            ? 'drag-resize-start'
-            : state.type === 'resize-end'
-              ? 'drag-resize-end'
-              : 'progress';
+        hasRowChange
+          ? 'drag-row-change'
+          : state.type === 'move'
+            ? 'drag-move'
+            : state.type === 'resize-start'
+              ? 'drag-resize-start'
+              : state.type === 'resize-end'
+                ? 'drag-resize-end'
+                : 'progress';
+
+      const context: ChangeContext = { type: contextType };
+
+      if (hasRowChange) {
+        context.targetRowIndex = state.targetRowIndex;
+        context.targetParentId = targetParentId;
+        context.targetResourceId = targetResourceId;
+      }
 
       onTaskChange(
         {
@@ -194,12 +269,12 @@ export function useDrag({
           changes,
           previousValues,
         },
-        { type: contextType }
+        context
       );
     }
 
     setDragState(null);
-  }, [tasks, onTaskChange, msPerPixel, snap, snapMs]);
+  }, [tasks, onTaskChange, msPerPixel, snap, snapMs, enableRowDrag, getRowTarget]);
 
   const getDragPreview = useCallback(
     (taskId: string): DragPreview | null => {
@@ -215,6 +290,7 @@ export function useDrag({
           return {
             start: snap(dragState.initialStart + deltaMs),
             end: snap(dragState.initialEnd + deltaMs),
+            rowIndex: enableRowDrag ? dragState.targetRowIndex : undefined,
           };
 
         case 'resize-start':
@@ -257,7 +333,7 @@ export function useDrag({
           return null;
       }
     },
-    [dragState, tasks, msPerPixel, snap, snapMs]
+    [dragState, tasks, msPerPixel, snap, snapMs, enableRowDrag]
   );
 
   // Attach global listeners when dragging
@@ -295,5 +371,6 @@ export function useDrag({
     getDragPreview,
     handleDragStart,
     isDragging: dragState?.isDragging ?? false,
+    targetRowIndex: dragState?.isDragging ? dragState.targetRowIndex : null,
   };
 }

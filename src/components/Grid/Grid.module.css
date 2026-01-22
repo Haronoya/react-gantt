@@ -102,6 +102,11 @@
   background: var(--gantt-row-selected);
 }
 
+.row.dropTarget {
+  background: var(--gantt-drop-target-bg, rgba(66, 165, 245, 0.2));
+  box-shadow: inset 0 0 0 2px var(--gantt-drop-target-border, #42a5f5);
+}
+
 .cell {
   display: flex;
   align-items: center;

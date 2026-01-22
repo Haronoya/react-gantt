@@ -129,16 +129,40 @@ export const Gantt = memo(function Gantt({
       onScroll?.({ scrollTop, scrollLeft });
     });
 
+  // Get the target parent/resource ID for a row index
+  const getRowTarget = useCallback(
+    (rowIndex: number): { parentId?: string | null; resourceId?: string | null } => {
+      const targetTask = ganttState.visibleTasks[rowIndex];
+      if (!targetTask) return {};
+
+      // If target is a group, make it the parent
+      if (targetTask.type === 'group') {
+        return { parentId: targetTask.id };
+      }
+
+      // Otherwise, use the same parent as the target task
+      return {
+        parentId: targetTask.parentId,
+        resourceId: targetTask.resourceId,
+      };
+    },
+    [ganttState.visibleTasks]
+  );
+
   // Drag handling
   const {
     getDragPreview,
     handleDragStart,
     isDragging,
+    targetRowIndex,
   } = useDrag({
     tasks: ganttState.visibleTasks,
     zoomConfig: adjustedZoomConfig,
     onTaskChange: ganttState.handleTaskChange,
     editable,
+    rowHeight,
+    enableRowDrag: true,
+    getRowTarget,
   });
 
   // Tooltip
@@ -263,6 +287,7 @@ export const Gantt = memo(function Gantt({
       // Drag
       isDragging,
       getDragPreview,
+      targetRowIndex,
 
       // Actions
       handleTaskChange: ganttState.handleTaskChange,
@@ -292,6 +317,7 @@ export const Gantt = memo(function Gantt({
       isRelated,
       isDragging,
       getDragPreview,
+      targetRowIndex,
       handleDragStartWrapper,
       handleTaskClick,
       handleTaskDoubleClick,

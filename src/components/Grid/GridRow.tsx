@@ -9,10 +9,11 @@ import styles from './Grid.module.css';
 interface GridRowProps {
   task: NormalizedTask;
   columns: ColumnDef[];
+  isDropTarget?: boolean;
   style?: React.CSSProperties;
 }
 
-export const GridRow = memo(function GridRow({ task, columns, style }: GridRowProps) {
+export const GridRow = memo(function GridRow({ task, columns, isDropTarget = false, style }: GridRowProps) {
   const {
     isSelected,
     handleRowClick,
@@ -46,7 +47,7 @@ export const GridRow = memo(function GridRow({ task, columns, style }: GridRowPr
 
   return (
     <div
-      className={`${styles.row} ${selected ? styles.selected : ''}`}
+      className={`${styles.row} ${selected ? styles.selected : ''} ${isDropTarget ? styles.dropTarget : ''}`}
       style={style}
       onClick={handleClick}
       role="row"

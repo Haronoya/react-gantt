@@ -88,9 +88,9 @@ export interface TaskPatch {
   /** Task ID being updated */
   id: string;
   /** Fields that changed */
-  changes: Partial<Pick<Task, 'start' | 'end' | 'progress' | 'title' | 'collapsed'>>;
+  changes: Partial<Pick<Task, 'start' | 'end' | 'progress' | 'title' | 'collapsed' | 'parentId' | 'resourceId'>>;
   /** Previous values for undo support */
-  previousValues: Partial<Pick<Task, 'start' | 'end' | 'progress' | 'title' | 'collapsed'>>;
+  previousValues: Partial<Pick<Task, 'start' | 'end' | 'progress' | 'title' | 'collapsed' | 'parentId' | 'resourceId'>>;
 }
 
 /**
@@ -98,7 +98,13 @@ export interface TaskPatch {
  */
 export interface ChangeContext {
   /** Type of change that occurred */
-  type: 'drag-move' | 'drag-resize-start' | 'drag-resize-end' | 'progress' | 'collapse' | 'edit';
+  type: 'drag-move' | 'drag-resize-start' | 'drag-resize-end' | 'drag-row-change' | 'progress' | 'collapse' | 'edit';
   /** Original event if applicable */
   originalEvent?: MouseEvent | TouchEvent | KeyboardEvent;
+  /** Target row index when moving between rows */
+  targetRowIndex?: number;
+  /** Target parent ID when moving to a different parent */
+  targetParentId?: string | null;
+  /** Target resource ID when moving to a different resource */
+  targetResourceId?: string | null;
 }

@@ -52,6 +52,10 @@
   --gantt-drag-preview-bg: rgba(66, 165, 245, 0.3);
   --gantt-drag-preview-border: #42a5f5;
 
+  /* Drop target */
+  --gantt-drop-target-bg: rgba(66, 165, 245, 0.15);
+  --gantt-drop-target-border: #42a5f5;
+
   /* Splitter */
   --gantt-splitter-bg: #e0e0e0;
   --gantt-splitter-bg-hover: #bdbdbd;
