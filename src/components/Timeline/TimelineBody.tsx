@@ -207,11 +207,24 @@ export const TimelineBody = memo(function TimelineBody({
     [resourceMode, resourceRows, rowHeight]
   );
 
+  // Generate a key based on stack levels for cache invalidation
+  const getRowKey = useCallback(
+    (index: number) => {
+      if (!resourceMode) return `task-${index}`;
+      const row = resourceRows[index];
+      if (!row) return `row-${index}`;
+      if (row.isGroupHeader) return `group-${row.groupName}`;
+      return `resource-${row.resource?.id}-${row.stackLevels || 1}`;
+    },
+    [resourceMode, resourceRows]
+  );
+
   // Virtual row rendering
   const virtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => scrollRef.current,
     estimateSize: getRowHeight,
+    getItemKey: getRowKey,
     overscan: 5,
   });
 
@@ -364,7 +377,7 @@ export const TimelineBody = memo(function TimelineBody({
               className={`${styles.rowBackground} ${isDropTarget ? styles.dropTarget : ''} ${isGroupHeader ? styles.groupHeaderBackground : ''}`}
               style={{
                 top: virtualRow.start,
-                height: rowHeight,
+                height: virtualRow.size,
                 width: timelineWidth,
               }}
             />
@@ -456,7 +469,7 @@ export const TimelineBody = memo(function TimelineBody({
                     task={task}
                     left={left}
                     width={width}
-                    top={virtualRow.start + (rowHeight - position.height) / 2}
+                    top={position.top}
                     height={position.height}
                     isSelected={isSelected(task.id)}
                     isRelated={isRelated(task.id)}

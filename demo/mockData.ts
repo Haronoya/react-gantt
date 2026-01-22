@@ -1,4 +1,4 @@
-import type { Task, ColumnDef, TaskSegment } from '../src';
+import type { Task, ColumnDef, TaskSegment, Resource } from '../src';
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
@@ -301,3 +301,197 @@ export const sampleTasks: Task[] = generateTasks(30);
  * Sample hourly tasks for hour-view demo
  */
 export const hourlyTasks: Task[] = generateHourlyTasks(20);
+
+/**
+ * Sample resources for resource mode demo
+ */
+export const sampleResources: Resource[] = [
+  { id: 'res-1', name: '田中太郎', group: '開発チーム', capacity: 1 },
+  { id: 'res-2', name: '鈴木花子', group: '開発チーム', capacity: 1 },
+  { id: 'res-3', name: '佐藤次郎', group: '開発チーム', capacity: 1 },
+  { id: 'res-4', name: '山田三郎', group: 'デザインチーム', capacity: 1 },
+  { id: 'res-5', name: '高橋四郎', group: 'デザインチーム', capacity: 1 },
+  { id: 'res-6', name: '伊藤五郎', group: 'QAチーム', capacity: 1 },
+  { id: 'res-7', name: '渡辺六郎', group: 'QAチーム', capacity: 1 },
+];
+
+/**
+ * Generate tasks with resource assignments for resource mode demo
+ * Includes overlapping tasks to demonstrate stacking
+ */
+export function generateResourceTasks(): Task[] {
+  const tasks: Task[] = [];
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const startDate = now.getTime();
+
+  // Tasks for 田中太郎 (res-1) - with overlapping tasks
+  tasks.push({
+    id: 'rt-1',
+    title: 'API設計',
+    start: startDate,
+    end: startDate + 3 * MS_PER_DAY,
+    resourceId: 'res-1',
+    progress: 0.8,
+    style: { color: TASK_COLORS[0] },
+  });
+  tasks.push({
+    id: 'rt-2',
+    title: 'バックエンド実装',
+    start: startDate + 2 * MS_PER_DAY, // Overlaps with rt-1
+    end: startDate + 6 * MS_PER_DAY,
+    resourceId: 'res-1',
+    progress: 0.4,
+    style: { color: TASK_COLORS[1] },
+  });
+  tasks.push({
+    id: 'rt-3',
+    title: 'ユニットテスト作成',
+    start: startDate + 4 * MS_PER_DAY, // Overlaps with rt-2
+    end: startDate + 8 * MS_PER_DAY,
+    resourceId: 'res-1',
+    progress: 0.2,
+    style: { color: TASK_COLORS[2] },
+  });
+
+  // Tasks for 鈴木花子 (res-2)
+  tasks.push({
+    id: 'rt-4',
+    title: 'フロントエンド設計',
+    start: startDate + 1 * MS_PER_DAY,
+    end: startDate + 4 * MS_PER_DAY,
+    resourceId: 'res-2',
+    progress: 0.9,
+    style: { color: TASK_COLORS[3] },
+  });
+  tasks.push({
+    id: 'rt-5',
+    title: 'React実装',
+    start: startDate + 3 * MS_PER_DAY, // Overlaps with rt-4
+    end: startDate + 9 * MS_PER_DAY,
+    resourceId: 'res-2',
+    progress: 0.5,
+    style: { color: TASK_COLORS[4] },
+  });
+
+  // Tasks for 佐藤次郎 (res-3)
+  tasks.push({
+    id: 'rt-6',
+    title: 'DB設計',
+    start: startDate,
+    end: startDate + 2 * MS_PER_DAY,
+    resourceId: 'res-3',
+    progress: 1.0,
+    style: { color: TASK_COLORS[5] },
+  });
+  tasks.push({
+    id: 'rt-7',
+    title: 'マイグレーション',
+    start: startDate + 2 * MS_PER_DAY,
+    end: startDate + 4 * MS_PER_DAY,
+    resourceId: 'res-3',
+    progress: 0.7,
+    style: { color: TASK_COLORS[6] },
+  });
+
+  // Tasks for 山田三郎 (res-4) - デザインチーム with overlapping
+  tasks.push({
+    id: 'rt-8',
+    title: 'UIデザイン',
+    start: startDate,
+    end: startDate + 5 * MS_PER_DAY,
+    resourceId: 'res-4',
+    progress: 0.6,
+    style: { color: TASK_COLORS[7] },
+  });
+  tasks.push({
+    id: 'rt-9',
+    title: 'アイコン作成',
+    start: startDate + 2 * MS_PER_DAY, // Overlaps with rt-8
+    end: startDate + 4 * MS_PER_DAY,
+    resourceId: 'res-4',
+    progress: 0.3,
+    style: { color: TASK_COLORS[0] },
+  });
+  tasks.push({
+    id: 'rt-10',
+    title: 'プロトタイプ',
+    start: startDate + 3 * MS_PER_DAY, // Overlaps with rt-8 and rt-9
+    end: startDate + 7 * MS_PER_DAY,
+    resourceId: 'res-4',
+    progress: 0.1,
+    style: { color: TASK_COLORS[1] },
+  });
+
+  // Tasks for 高橋四郎 (res-5)
+  tasks.push({
+    id: 'rt-11',
+    title: 'グラフィック作成',
+    start: startDate + 1 * MS_PER_DAY,
+    end: startDate + 6 * MS_PER_DAY,
+    resourceId: 'res-5',
+    progress: 0.4,
+    style: { color: TASK_COLORS[2] },
+  });
+
+  // Tasks for 伊藤五郎 (res-6) - QAチーム
+  tasks.push({
+    id: 'rt-12',
+    title: 'テスト計画',
+    start: startDate + 4 * MS_PER_DAY,
+    end: startDate + 6 * MS_PER_DAY,
+    resourceId: 'res-6',
+    progress: 0.5,
+    style: { color: TASK_COLORS[3] },
+  });
+  tasks.push({
+    id: 'rt-13',
+    title: '結合テスト',
+    start: startDate + 6 * MS_PER_DAY,
+    end: startDate + 10 * MS_PER_DAY,
+    resourceId: 'res-6',
+    progress: 0.0,
+    style: { color: TASK_COLORS[4] },
+  });
+
+  // Tasks for 渡辺六郎 (res-7)
+  tasks.push({
+    id: 'rt-14',
+    title: 'パフォーマンステスト',
+    start: startDate + 7 * MS_PER_DAY,
+    end: startDate + 10 * MS_PER_DAY,
+    resourceId: 'res-7',
+    progress: 0.0,
+    style: { color: TASK_COLORS[5] },
+  });
+
+  return tasks;
+}
+
+/**
+ * Sample resource tasks
+ */
+export const resourceTasks: Task[] = generateResourceTasks();
+
+/**
+ * Column definitions for resource mode
+ */
+export const resourceColumns: ColumnDef[] = [
+  {
+    id: 'title',
+    title: 'タスク名',
+    width: 180,
+    minWidth: 100,
+    accessor: 'title',
+    resizable: true,
+    align: 'left',
+  },
+  {
+    id: 'progress',
+    title: '進捗',
+    width: 70,
+    minWidth: 50,
+    accessor: (task) => `${Math.round((task.progress ?? 0) * 100)}%`,
+    align: 'right',
+  },
+];

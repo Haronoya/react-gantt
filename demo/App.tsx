@@ -9,8 +9,9 @@ import {
   type ColumnDef,
   type Marker,
   type Dependency,
+  type Resource,
 } from '../src';
-import { sampleTasks, sampleColumns, hourlyTasks, hourlyColumns, generateLargeTasks } from './mockData';
+import { sampleTasks, sampleColumns, hourlyTasks, hourlyColumns, generateLargeTasks, sampleResources, resourceTasks, resourceColumns } from './mockData';
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
@@ -199,6 +200,8 @@ const styles = {
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(sampleTasks);
   const [columns, setColumns] = useState<ColumnDef[]>(sampleColumns);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [resourceMode, setResourceMode] = useState(false);
   const [selection, setSelection] = useState<SelectionState>({ ids: [] });
   const [zoom, setZoom] = useState<ZoomLevel>('day');
   const [editable, setEditable] = useState(true);
@@ -321,6 +324,8 @@ export default function App() {
     const largeTasks = generateLargeTasks(10000);
     setTasks(largeTasks);
     setColumns(sampleColumns);
+    setResources([]);
+    setResourceMode(false);
     setSelection({ ids: [] });
     setViewStart(undefined);
     setViewEnd(undefined);
@@ -332,6 +337,8 @@ export default function App() {
   const handleLoadSample = useCallback(() => {
     setTasks(sampleTasks);
     setColumns(sampleColumns);
+    setResources([]);
+    setResourceMode(false);
     setSelection({ ids: [] });
     setViewStart(undefined);
     setViewEnd(undefined);
@@ -343,10 +350,23 @@ export default function App() {
   const handleLoadHourly = useCallback(() => {
     setTasks(hourlyTasks);
     setColumns(hourlyColumns);
+    setResources([]);
+    setResourceMode(false);
     setSelection({ ids: [] });
     setViewStart(undefined);
     setViewEnd(undefined);
     setZoom('hour');
+  }, []);
+
+  const handleLoadResource = useCallback(() => {
+    setTasks(resourceTasks);
+    setColumns(resourceColumns);
+    setResources(sampleResources);
+    setResourceMode(true);
+    setSelection({ ids: [] });
+    setViewStart(undefined);
+    setViewEnd(undefined);
+    setZoom('day');
   }, []);
 
   // Navigate view period - use viewPeriod if set, otherwise fall back to zoom-based step
@@ -467,6 +487,9 @@ export default function App() {
         <h1 style={styles.title}>React Gantt Chart</h1>
         <div style={styles.info}>
           <span style={styles.infoBadge}>{tasks.length} タスク</span>
+          {resourceMode && (
+            <span style={styles.infoBadge}>{resources.length} リソース</span>
+          )}
           {selection.ids.length > 0 && (
             <span style={styles.infoBadge}>{selection.ids.length} 選択中</span>
           )}
@@ -597,6 +620,15 @@ export default function App() {
           <button style={styles.dataButton} onClick={handleLoadHourly}>
             時間単位 (20)
           </button>
+          <button
+            style={{
+              ...styles.dataButton,
+              ...(resourceMode ? { background: '#e3f2fd', borderColor: '#1976d2' } : {}),
+            }}
+            onClick={handleLoadResource}
+          >
+            リソース (14)
+          </button>
           <button style={styles.dataButton} onClick={handleLoadLarge}>
             大量 (10K)
           </button>
@@ -608,6 +640,9 @@ export default function App() {
         <Gantt
           tasks={tasks}
           columns={columns}
+          resources={resourceMode ? resources : undefined}
+          resourceMode={resourceMode}
+          resourceGroupBy="group"
           selection={selection}
           view={{ zoom, start: viewStart, end: viewEnd }}
           editable={editable}

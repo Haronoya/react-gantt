@@ -45,10 +45,23 @@ export const Grid = memo(
       [resourceMode, resourceRows, rowHeight]
     );
 
+    // Generate a key based on stack levels for cache invalidation
+    const getRowKey = useCallback(
+      (index: number) => {
+        if (!resourceMode) return `task-${index}`;
+        const row = resourceRows[index];
+        if (!row) return `row-${index}`;
+        if (row.isGroupHeader) return `group-${row.groupName}`;
+        return `resource-${row.resource?.id}-${row.stackLevels || 1}`;
+      },
+      [resourceMode, resourceRows]
+    );
+
     const virtualizer = useVirtualizer({
       count: rowCount,
       getScrollElement: () => parentRef.current,
       estimateSize: getRowHeight,
+      getItemKey: getRowKey,
       overscan: 5,
     });
 
