@@ -11,7 +11,7 @@ import {
 } from 'react';
 import type { GanttProps, NormalizedTask } from '../../types';
 import { GanttProvider, type GanttContextValue } from '../../context';
-import { useGanttState, useSyncScroll, useDrag, useTooltip, type DragType } from '../../hooks';
+import { useGanttState, useSyncScroll, useDrag, useTooltip, useResourceLayout, type DragType } from '../../hooks';
 import {
   DEFAULT_GRID_WIDTH,
   DEFAULT_MIN_GRID_WIDTH,
@@ -65,6 +65,11 @@ export const Gantt = memo(function Gantt({
   workingHours,
   showNonWorkingTime = true,
   highlightWeekends = true,
+  // Resource mode props
+  resources = [],
+  resourceMode = false,
+  resourceGroupBy,
+  showEmptyResources = true,
 }: GanttProps) {
   // Grid width state
   const [gridWidth, setGridWidth] = useState(initialGridWidth);
@@ -100,6 +105,12 @@ export const Gantt = memo(function Gantt({
     onTaskChange,
     onSelectionChange,
     onZoomChange: (zoom) => onViewChange?.({ ...view, zoom }),
+  });
+
+  // Resource layout for resource mode
+  const resourceLayout = useResourceLayout(resources, ganttState.visibleTasks, {
+    groupBy: resourceGroupBy,
+    showEmptyResources,
   });
 
   // Calculate pixelsPerDay for fitToContainer mode
@@ -261,12 +272,27 @@ export const Gantt = memo(function Gantt({
     [handleDragStart]
   );
 
+  // Get tasks for a resource (memoized)
+  const getTasksForResource = useCallback(
+    (resourceId: string): NormalizedTask[] => {
+      return ganttState.visibleTasks.filter((t) => t.resourceId === resourceId);
+    },
+    [ganttState.visibleTasks]
+  );
+
   // Context value
   const contextValue = useMemo<GanttContextValue>(
     () => ({
       // Data
       visibleTasks: ganttState.visibleTasks,
       columns: ganttState.columns,
+
+      // Resource mode
+      resourceMode,
+      resources,
+      resourceRows: resourceLayout.rows,
+      getTasksForResource,
+      toggleResourceGroup: resourceLayout.toggleGroup,
 
       // View
       zoom: ganttState.zoom,
@@ -327,6 +353,11 @@ export const Gantt = memo(function Gantt({
       handleTooltipMove,
       onColumnResize,
       renderers,
+      resourceMode,
+      resources,
+      resourceLayout.rows,
+      resourceLayout.toggleGroup,
+      getTasksForResource,
     ]
   );
 

@@ -1,22 +1,18 @@
 'use client';
 
-import { memo, type MouseEvent } from 'react';
+import { memo, type MouseEvent, type CSSProperties } from 'react';
 import type { Resource } from '../../types/resource';
 import styles from './Grid.module.css';
 
 interface ResourceRowProps {
   /** The resource to display */
   resource: Resource;
-  /** Row height in pixels */
-  rowHeight: number;
-  /** Top offset in pixels */
-  top: number;
-  /** Width of the grid */
-  width: number;
-  /** Depth in hierarchy (for indentation) */
-  depth: number;
+  /** Whether this is a drop target during drag */
+  isDropTarget?: boolean;
   /** Whether the row is selected */
   isSelected?: boolean;
+  /** Inline styles */
+  style?: CSSProperties;
   /** Click handler */
   onClick?: (resource: Resource, event: MouseEvent) => void;
   /** Double-click handler */
@@ -25,32 +21,24 @@ interface ResourceRowProps {
 
 export const ResourceRow = memo(function ResourceRow({
   resource,
-  rowHeight,
-  top,
-  width,
-  depth,
+  isDropTarget = false,
   isSelected = false,
+  style,
   onClick,
   onDoubleClick,
 }: ResourceRowProps) {
-  const indentWidth = 20;
-
   return (
     <div
-      className={`${styles.row} ${isSelected ? styles.rowSelected : ''}`}
+      className={`${styles.row} ${isSelected ? styles.rowSelected : ''} ${isDropTarget ? styles.dropTarget : ''}`}
       style={{
-        position: 'absolute',
-        top,
-        left: 0,
-        width,
-        height: rowHeight,
-        paddingLeft: depth * indentWidth,
+        ...style,
         backgroundColor: resource.color,
       }}
       onClick={(e) => onClick?.(resource, e)}
       onDoubleClick={(e) => onDoubleClick?.(resource, e)}
       role="row"
       aria-selected={isSelected}
+      data-resource-id={resource.id}
     >
       <div className={styles.resourceCell}>
         <span className={styles.resourceName}>{resource.name}</span>

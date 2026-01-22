@@ -309,10 +309,28 @@ const nonWorkingPeriods: NonWorkingPeriod[] = [
 
 ### リソースビュー
 
-リソース（人、設備等）単位でタスクを表示します。
+リソース（人、設備等）単位でタスクを表示します。タスクビューとの違いは以下の通りです：
+
+| | タスクビュー | リソースビュー |
+|---|---|---|
+| 行の単位 | 1行 = 1タスク | 1行 = 1リソース |
+| 同じ行のタスク数 | 1つ | 複数可 |
+| 用途 | プロジェクト全体の進捗確認 | 誰が何をしているか確認 |
+
+```
+タスクビュー:
+行1: タスクA ████████████
+行2: タスクB     ██████████
+行3: タスクC         ████████
+
+リソースビュー:
+行1: 田中さん  ████タスクA████  ██タスクD██
+行2: 鈴木さん      ████タスクB████
+行3: 佐藤さん          ████タスクC████
+```
 
 ```tsx
-import { Gantt, type Resource } from '@haro/react-gantt';
+import { Gantt, type Resource, type Task } from '@haro/react-gantt';
 
 const resources: Resource[] = [
   { id: 'r1', name: '田中太郎', group: '開発チーム' },
@@ -321,19 +339,22 @@ const resources: Resource[] = [
 ];
 
 const tasks: Task[] = [
+  // 同じリソースに複数のタスクを割り当て可能
   { id: '1', title: 'タスク1', start: Date.now(), end: Date.now() + 86400000, resourceId: 'r1' },
-  { id: '2', title: 'タスク2', start: Date.now(), end: Date.now() + 172800000, resourceId: 'r2' },
+  { id: '2', title: 'タスク2', start: Date.now() + 86400000, end: Date.now() + 172800000, resourceId: 'r1' },
+  { id: '3', title: 'タスク3', start: Date.now(), end: Date.now() + 172800000, resourceId: 'r2' },
 ];
 
 <Gantt
   tasks={tasks}
   resources={resources}
-  resourceMode={true}
-  resourceGroupBy="group"
-  showEmptyResources={true}
-  onResourceClick={(resource, event) => console.log('Clicked:', resource)}
+  resourceMode={true}           // リソースビューを有効化
+  resourceGroupBy="group"       // グループ化するフィールド
+  showEmptyResources={true}     // タスクがないリソースも表示
 />
 ```
+
+リソースビューでは、同じリソースに割り当てられた複数のタスクが同じ行に並んで表示されます。これにより、各リソースの稼働状況やスケジュールの競合を一目で確認できます。
 
 ### 関連タスクのハイライト
 

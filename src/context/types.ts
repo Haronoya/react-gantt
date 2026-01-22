@@ -8,8 +8,10 @@ import type {
   ChangeContext,
   ColumnDef,
   GanttRenderers,
+  Resource,
 } from '../types';
 import type { DragType } from '../hooks';
+import type { ResourceRowData } from '../types/resource';
 
 /**
  * Context value provided to all Gantt child components
@@ -18,6 +20,13 @@ export interface GanttContextValue {
   // Data
   visibleTasks: NormalizedTask[];
   columns: ColumnDef[];
+
+  // Resource mode
+  resourceMode: boolean;
+  resources: Resource[];
+  resourceRows: ResourceRowData[];
+  getTasksForResource: (resourceId: string) => NormalizedTask[];
+  toggleResourceGroup: (groupName: string) => void;
 
   // View configuration
   zoom: ZoomLevel;

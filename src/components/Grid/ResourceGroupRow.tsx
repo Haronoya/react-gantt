@@ -1,46 +1,34 @@
 'use client';
 
-import { memo, type MouseEvent } from 'react';
+import { memo, type CSSProperties } from 'react';
 import styles from './Grid.module.css';
 
 interface ResourceGroupRowProps {
   /** Group name */
   groupName: string;
-  /** Row height in pixels */
-  rowHeight: number;
-  /** Top offset in pixels */
-  top: number;
-  /** Width of the grid */
-  width: number;
+  /** Toggle handler */
+  onToggle?: () => void;
   /** Whether the group is collapsed */
-  isCollapsed: boolean;
-  /** Toggle collapse handler */
-  onToggleCollapse?: (groupName: string, event: MouseEvent) => void;
+  isCollapsed?: boolean;
+  /** Inline styles */
+  style?: CSSProperties;
 }
 
 export const ResourceGroupRow = memo(function ResourceGroupRow({
   groupName,
-  rowHeight,
-  top,
-  width,
-  isCollapsed,
-  onToggleCollapse,
+  onToggle,
+  isCollapsed = false,
+  style,
 }: ResourceGroupRowProps) {
   return (
     <div
       className={`${styles.row} ${styles.groupRow}`}
-      style={{
-        position: 'absolute',
-        top,
-        left: 0,
-        width,
-        height: rowHeight,
-      }}
+      style={style}
       role="row"
     >
       <button
         className={styles.expandButton}
-        onClick={(e) => onToggleCollapse?.(groupName, e)}
+        onClick={onToggle}
         aria-expanded={!isCollapsed}
         aria-label={isCollapsed ? 'Expand group' : 'Collapse group'}
       >

@@ -72,6 +72,9 @@ export const TimelineBody = memo(function TimelineBody({
     getDragPreview,
     targetRowIndex,
     zoom,
+    resourceMode,
+    resourceRows,
+    getTasksForResource,
   } = useGanttContext();
 
   // Calculate task positions
@@ -82,9 +85,12 @@ export const TimelineBody = memo(function TimelineBody({
     rowHeight,
   });
 
+  // Determine row count based on mode
+  const rowCount = resourceMode ? resourceRows.length : visibleTasks.length;
+
   // Virtual row rendering
   const virtualizer = useVirtualizer({
-    count: visibleTasks.length,
+    count: rowCount,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => rowHeight,
     overscan: 5,
@@ -240,51 +246,106 @@ export const TimelineBody = memo(function TimelineBody({
 
         {/* Task bars */}
         <div className={styles.tasksContainer}>
-          {virtualItems.map((virtualRow) => {
-            const task = visibleTasks[virtualRow.index];
-            const position = positions.get(task.id);
-            if (!position) return null;
+          {resourceMode ? (
+            // Resource mode: render tasks for each resource row
+            virtualItems.map((virtualRow) => {
+              const resourceRow = resourceRows[virtualRow.index];
+              if (!resourceRow || resourceRow.isGroupHeader || !resourceRow.resource) {
+                return null;
+              }
 
-            // Skip tasks that are completely outside the view range
-            const taskStart = task.start;
-            const taskEnd = task.end;
-            if (taskEnd < viewStart || taskStart > viewEnd) {
-              return null;
-            }
+              const resourceTasks = getTasksForResource(resourceRow.resource.id);
 
-            // Apply drag preview if dragging
-            const preview = getDragPreview(task.id);
-            let { left, width } = position;
+              return resourceTasks.map((task) => {
+                const position = positions.get(task.id);
+                if (!position) return null;
 
-            if (preview) {
-              left = timestampToPixel(preview.start, viewStart, zoomConfig.pixelsPerDay);
-              width =
-                (preview.end - preview.start) / MS_PER_DAY * zoomConfig.pixelsPerDay;
-            }
+                // Skip tasks outside view range
+                if (task.end < viewStart || task.start > viewEnd) {
+                  return null;
+                }
 
-            // Clip task bar to view bounds
-            const clippedLeft = Math.max(0, left);
-            const rightEdge = left + width;
-            const clippedRight = Math.min(timelineWidth, rightEdge);
-            const clippedWidth = Math.max(0, clippedRight - clippedLeft);
+                // Apply drag preview if dragging
+                const preview = getDragPreview(task.id);
+                let left = position.left;
+                let width = position.width;
 
-            // Skip if completely clipped
-            if (clippedWidth <= 0) return null;
+                if (preview) {
+                  left = timestampToPixel(preview.start, viewStart, zoomConfig.pixelsPerDay);
+                  width = (preview.end - preview.start) / MS_PER_DAY * zoomConfig.pixelsPerDay;
+                }
 
-            return (
-              <TaskBar
-                key={task.id}
-                task={task}
-                left={left}
-                width={width}
-                top={virtualRow.start + (rowHeight - position.height) / 2}
-                height={position.height}
-                isSelected={isSelected(task.id)}
-                isRelated={isRelated(task.id)}
-                isDragging={isDragging && getDragPreview(task.id) !== null}
-              />
-            );
-          })}
+                // Clip task bar to view bounds
+                const clippedLeft = Math.max(0, left);
+                const rightEdge = left + width;
+                const clippedRight = Math.min(timelineWidth, rightEdge);
+                const clippedWidth = Math.max(0, clippedRight - clippedLeft);
+
+                if (clippedWidth <= 0) return null;
+
+                return (
+                  <TaskBar
+                    key={task.id}
+                    task={task}
+                    left={left}
+                    width={width}
+                    top={virtualRow.start + (rowHeight - position.height) / 2}
+                    height={position.height}
+                    isSelected={isSelected(task.id)}
+                    isRelated={isRelated(task.id)}
+                    isDragging={isDragging && getDragPreview(task.id) !== null}
+                  />
+                );
+              });
+            })
+          ) : (
+            // Task mode: one task per row
+            virtualItems.map((virtualRow) => {
+              const task = visibleTasks[virtualRow.index];
+              const position = positions.get(task.id);
+              if (!position) return null;
+
+              // Skip tasks that are completely outside the view range
+              const taskStart = task.start;
+              const taskEnd = task.end;
+              if (taskEnd < viewStart || taskStart > viewEnd) {
+                return null;
+              }
+
+              // Apply drag preview if dragging
+              const preview = getDragPreview(task.id);
+              let { left, width } = position;
+
+              if (preview) {
+                left = timestampToPixel(preview.start, viewStart, zoomConfig.pixelsPerDay);
+                width =
+                  (preview.end - preview.start) / MS_PER_DAY * zoomConfig.pixelsPerDay;
+              }
+
+              // Clip task bar to view bounds
+              const clippedLeft = Math.max(0, left);
+              const rightEdge = left + width;
+              const clippedRight = Math.min(timelineWidth, rightEdge);
+              const clippedWidth = Math.max(0, clippedRight - clippedLeft);
+
+              // Skip if completely clipped
+              if (clippedWidth <= 0) return null;
+
+              return (
+                <TaskBar
+                  key={task.id}
+                  task={task}
+                  left={left}
+                  width={width}
+                  top={virtualRow.start + (rowHeight - position.height) / 2}
+                  height={position.height}
+                  isSelected={isSelected(task.id)}
+                  isRelated={isRelated(task.id)}
+                  isDragging={isDragging && getDragPreview(task.id) !== null}
+                />
+              );
+            })
+          )}
         </div>
 
         {/* Task deadline markers */}
