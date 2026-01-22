@@ -90,8 +90,10 @@ export function calculateTimelineWidth(
   viewEnd: number,
   pixelsPerDay: number
 ): number {
-  const days = (viewEnd - viewStart) / MS_PER_DAY;
-  return days * pixelsPerDay;
+  // Ensure viewEnd >= viewStart to avoid negative width
+  const duration = Math.max(0, viewEnd - viewStart);
+  const days = duration / MS_PER_DAY;
+  return Math.max(0, days * pixelsPerDay);
 }
 
 /**

@@ -125,12 +125,12 @@ export function useDrag({
 
       // Calculate target row based on vertical movement (only for 'move' type)
       let targetRowIndex = prev.targetRowIndex;
-      if (prev.type === 'move' && enableRowDrag) {
+      if (prev.type === 'move' && enableRowDrag && tasks.length > 0) {
         const verticalDelta = clientY - prev.startY;
         const rowDelta = Math.round(verticalDelta / rowHeight);
         targetRowIndex = prev.initialRowIndex + rowDelta;
-        // Clamp to valid row range
-        targetRowIndex = Math.max(0, Math.min(tasks.length - 1, targetRowIndex));
+        // Clamp to valid row range (ensure non-negative even with empty array)
+        targetRowIndex = Math.max(0, Math.min(Math.max(0, tasks.length - 1), targetRowIndex));
       }
 
       return {
@@ -179,9 +179,13 @@ export function useDrag({
       case 'progress': {
         const task = tasks.find((t) => t.id === state.taskId);
         if (task) {
-          const taskWidth = (task.end - task.start) / msPerPixel;
-          const progressDelta = deltaX / taskWidth;
-          newProgress = Math.max(0, Math.min(1, state.initialProgress + progressDelta));
+          const taskDuration = task.end - task.start;
+          // Avoid division by zero for zero-duration tasks
+          if (taskDuration > 0) {
+            const taskWidth = taskDuration / msPerPixel;
+            const progressDelta = deltaX / taskWidth;
+            newProgress = Math.max(0, Math.min(1, state.initialProgress + progressDelta));
+          }
         }
         break;
       }
@@ -314,17 +318,21 @@ export function useDrag({
         case 'progress': {
           const task = tasks.find((t) => t.id === taskId);
           if (task) {
-            const taskWidth = (task.end - task.start) / msPerPixel;
-            const progressDelta = deltaX / taskWidth;
-            const newProgress = Math.max(
-              0,
-              Math.min(1, dragState.initialProgress + progressDelta)
-            );
-            return {
-              start: dragState.initialStart,
-              end: dragState.initialEnd,
-              progress: newProgress,
-            };
+            const taskDuration = task.end - task.start;
+            // Avoid division by zero for zero-duration tasks
+            if (taskDuration > 0) {
+              const taskWidth = taskDuration / msPerPixel;
+              const progressDelta = deltaX / taskWidth;
+              const newProgress = Math.max(
+                0,
+                Math.min(1, dragState.initialProgress + progressDelta)
+              );
+              return {
+                start: dragState.initialStart,
+                end: dragState.initialEnd,
+                progress: newProgress,
+              };
+            }
           }
           return null;
         }

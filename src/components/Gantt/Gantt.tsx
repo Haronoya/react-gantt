@@ -184,28 +184,62 @@ export const Gantt = memo(function Gantt({
     handleMouseMove: handleTooltipMove,
   } = useTooltip();
 
-  // Related tasks highlighting
+  // Build task lookup maps for efficient related task calculation
+  const taskMaps = useMemo(() => {
+    const taskById = new Map<string, NormalizedTask>();
+    const tasksByGroupId = new Map<string, string[]>();
+    const tasksReferencingId = new Map<string, string[]>();
+
+    ganttState.visibleTasks.forEach((task) => {
+      taskById.set(task.id, task);
+
+      // Index by groupId
+      if (task.groupId) {
+        const existing = tasksByGroupId.get(task.groupId) || [];
+        existing.push(task.id);
+        tasksByGroupId.set(task.groupId, existing);
+      }
+
+      // Index reverse references (tasks that reference other tasks)
+      if (task.relatedTaskIds) {
+        task.relatedTaskIds.forEach((relatedId) => {
+          const existing = tasksReferencingId.get(relatedId) || [];
+          existing.push(task.id);
+          tasksReferencingId.set(relatedId, existing);
+        });
+      }
+    });
+
+    return { taskById, tasksByGroupId, tasksReferencingId };
+  }, [ganttState.visibleTasks]);
+
+  // Related tasks highlighting (optimized using pre-built maps)
   const relatedIds = useMemo(() => {
     if (!highlightRelatedTasks || ganttState.selection.ids.length === 0) {
       return new Set<string>();
     }
 
+    const { taskById, tasksByGroupId, tasksReferencingId } = taskMaps;
     const related = new Set<string>();
+    const selectedSet = new Set(ganttState.selection.ids);
 
     ganttState.selection.ids.forEach((selectedId) => {
-      const selectedTask = ganttState.visibleTasks.find((t) => t.id === selectedId);
+      const selectedTask = taskById.get(selectedId);
       if (!selectedTask) return;
 
-      // Add tasks with same groupId
+      // Add tasks with same groupId (O(1) lookup + O(k) iteration where k = group size)
       if (selectedTask.groupId) {
-        ganttState.visibleTasks.forEach((t) => {
-          if (t.groupId === selectedTask.groupId && t.id !== selectedId) {
-            related.add(t.id);
-          }
-        });
+        const groupTasks = tasksByGroupId.get(selectedTask.groupId);
+        if (groupTasks) {
+          groupTasks.forEach((taskId) => {
+            if (taskId !== selectedId) {
+              related.add(taskId);
+            }
+          });
+        }
       }
 
-      // Add explicitly related tasks
+      // Add explicitly related tasks (O(k) where k = related count)
       if (selectedTask.relatedTaskIds) {
         selectedTask.relatedTaskIds.forEach((relatedId) => {
           if (relatedId !== selectedId) {
@@ -214,19 +248,22 @@ export const Gantt = memo(function Gantt({
         });
       }
 
-      // Check if other tasks reference this task
-      ganttState.visibleTasks.forEach((t) => {
-        if (t.relatedTaskIds?.includes(selectedId) && t.id !== selectedId) {
-          related.add(t.id);
-        }
-      });
+      // Check if other tasks reference this task (O(1) lookup + O(k) iteration)
+      const referencingTasks = tasksReferencingId.get(selectedId);
+      if (referencingTasks) {
+        referencingTasks.forEach((taskId) => {
+          if (taskId !== selectedId) {
+            related.add(taskId);
+          }
+        });
+      }
     });
 
     // Remove selected tasks from related
-    ganttState.selection.ids.forEach((id) => related.delete(id));
+    selectedSet.forEach((id) => related.delete(id));
 
     return related;
-  }, [ganttState.visibleTasks, ganttState.selection.ids, highlightRelatedTasks]);
+  }, [taskMaps, ganttState.selection.ids, highlightRelatedTasks]);
 
   const isRelated = useCallback(
     (taskId: string) => relatedIds.has(taskId),

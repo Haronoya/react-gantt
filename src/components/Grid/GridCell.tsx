@@ -37,7 +37,12 @@ export const GridCell = memo(function GridCell({
   if (typeof column.accessor === 'function') {
     value = column.accessor(task);
   } else {
-    value = task[column.accessor as keyof NormalizedTask] as ReactNode;
+    // Access task property safely - accessor is keyof Task which is a subset of NormalizedTask keys
+    const rawValue = task[column.accessor as keyof NormalizedTask];
+    // Only render primitive values or null/undefined as ReactNode
+    value = typeof rawValue === 'string' || typeof rawValue === 'number' || rawValue == null
+      ? rawValue
+      : String(rawValue);
   }
 
   // Apply custom renderer if provided

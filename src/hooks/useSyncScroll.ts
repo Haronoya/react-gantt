@@ -20,6 +20,7 @@ export function useSyncScroll(
   const timelineRef = useRef<HTMLDivElement>(null);
   const isScrolling = useRef<'grid' | 'timeline' | null>(null);
   const rafId = useRef<number | null>(null);
+  const resetRafId = useRef<number | null>(null);
 
   const syncScroll = useCallback(
     (source: 'grid' | 'timeline', scrollTop: number, scrollLeft: number) => {
@@ -44,7 +45,10 @@ export function useSyncScroll(
         onScroll?.(scrollTop, scrollLeft);
 
         // Reset scrolling flag after animation frame
-        requestAnimationFrame(() => {
+        if (resetRafId.current !== null) {
+          cancelAnimationFrame(resetRafId.current);
+        }
+        resetRafId.current = requestAnimationFrame(() => {
           isScrolling.current = null;
         });
       });
@@ -85,6 +89,9 @@ export function useSyncScroll(
     return () => {
       if (rafId.current !== null) {
         cancelAnimationFrame(rafId.current);
+      }
+      if (resetRafId.current !== null) {
+        cancelAnimationFrame(resetRafId.current);
       }
     };
   }, []);

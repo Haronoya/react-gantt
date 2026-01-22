@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.2.4] - 2026-01-22
+
+### Fixed
+
+- **useDrag空配列エラー**: タスクが0件の場合の境界値エラーを修正
+- **useDragゼロ除算**: 進捗ドラッグ時のゼロ除算エラーを修正
+- **position.ts負数値**: calculateTimelineWidthで負の期間を防止
+- **useResourceLayout空リソース**: 空またはタスク1件のリソースのスタックレベル計算を修正
+- **DependencyLayer null安全化**: non-null assertion（!）を安全なnullチェックに置換
+- **useSyncScroll RAFクリーンアップ**: ネストされたrequestAnimationFrameの適切なキャンセル処理
+
+### Improved
+
+- **useTaskPositions**: useMemo→useCallbackに修正（関数のメモ化として正しいパターン）
+- **GridCell型安全性**: セル値取得時の型チェックを改善
+- **Gantt.tsx relatedIds最適化**: O(n²)→O(n)に計算量を削減（Mapベースのインデックス化）
+
+### Added
+
+- **ユニットテスト**: utils/position.ts, utils/tree.ts, utils/capacity.tsのテストを追加（67テスト）
+- **APIドキュメント更新**: docs/API.mdを最新の型定義・Props・Hooksに完全対応
+
 ## [0.2.3] - 2026-01-22
 
 ### Fixed

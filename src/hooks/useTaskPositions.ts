@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import type { NormalizedTask, ZoomConfig } from '../types';
 import {
   calculateTaskPosition,
@@ -66,8 +66,8 @@ export function useTaskPositions({
     return posMap;
   }, [tasks, zoomConfig, viewStart, rowHeight, barHeightRatio]);
 
-  const getPosition = useMemo(
-    () => (taskId: string) => positions.get(taskId),
+  const getPosition = useCallback(
+    (taskId: string) => positions.get(taskId),
     [positions]
   );
 

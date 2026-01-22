@@ -83,7 +83,12 @@ export function useResourceLayout(
   const stackLevelsByResource = useMemo(() => {
     const map = new Map<string, number>();
     tasksByResource.forEach((resourceTasks, resourceId) => {
-      if (resourceTasks.length <= 1) {
+      // Handle empty or single task - always 1 level
+      if (resourceTasks.length === 0) {
+        map.set(resourceId, 1);
+        return;
+      }
+      if (resourceTasks.length === 1) {
         map.set(resourceId, 1);
         return;
       }

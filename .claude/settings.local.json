@@ -9,7 +9,8 @@
       "Bash(timeout:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(npm run build:demo:*)"
+      "Bash(npm run build:demo:*)",
+      "Bash(npm run test:*)"
     ]
   }
 }

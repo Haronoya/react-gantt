@@ -109,8 +109,11 @@ export const DependencyLayer = memo(function DependencyLayer({
       {visibleDependencies
         .filter((dep) => !highlightedDependencyIds.has(dep.id))
         .map((dep) => {
-          const fromPos = positions.get(dep.fromTaskId)!;
-          const toPos = positions.get(dep.toTaskId)!;
+          const fromPos = positions.get(dep.fromTaskId);
+          const toPos = positions.get(dep.toTaskId);
+
+          // Safety check - should not happen due to visibleDependencies filter
+          if (!fromPos || !toPos) return null;
 
           return (
             <g
@@ -132,8 +135,11 @@ export const DependencyLayer = memo(function DependencyLayer({
       {visibleDependencies
         .filter((dep) => highlightedDependencyIds.has(dep.id))
         .map((dep) => {
-          const fromPos = positions.get(dep.fromTaskId)!;
-          const toPos = positions.get(dep.toTaskId)!;
+          const fromPos = positions.get(dep.fromTaskId);
+          const toPos = positions.get(dep.toTaskId);
+
+          // Safety check - should not happen due to visibleDependencies filter
+          if (!fromPos || !toPos) return null;
 
           return (
             <g
