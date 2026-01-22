@@ -7,6 +7,12 @@ import { timestampToPixel } from '../../utils/position';
 import { startOfDay, addDays } from '../../utils/date';
 import { MS_PER_DAY } from '../../constants';
 
+interface ResourceRowInfo {
+  id: string;
+  top: number;
+  height: number;
+}
+
 interface NonWorkingTimeLayerProps {
   periods?: NonWorkingPeriod[];
   workingHours?: WorkingHours;
@@ -15,6 +21,10 @@ interface NonWorkingTimeLayerProps {
   zoomConfig: ZoomConfig;
   containerHeight: number;
   highlightWeekends?: boolean;
+  /** Whether in resource mode */
+  resourceMode?: boolean;
+  /** Resource row information for resource-specific periods */
+  resourceRowInfos?: ResourceRowInfo[];
 }
 
 interface ExpandedPeriod {
@@ -22,6 +32,7 @@ interface ExpandedPeriod {
   end: number;
   type?: string;
   color?: string;
+  resourceId?: string;
 }
 
 /**
@@ -55,6 +66,7 @@ function expandRecurringPeriod(
           end: addDays(current, 1),
           type: period.type,
           color: period.color,
+          resourceId: period.resourceId,
         });
       }
       current = addDays(current, 1);
@@ -70,6 +82,8 @@ export const NonWorkingTimeLayer = memo(function NonWorkingTimeLayer({
   zoomConfig,
   containerHeight,
   highlightWeekends = true,
+  resourceMode = false,
+  resourceRowInfos,
 }: NonWorkingTimeLayerProps) {
   // Expand all periods including weekends and working hours
   const expandedPeriods = useMemo(() => {
@@ -131,6 +145,7 @@ export const NonWorkingTimeLayer = memo(function NonWorkingTimeLayer({
           end: Math.min(period.end, viewEnd),
           type: period.type,
           color: period.color,
+          resourceId: period.resourceId,
         });
       }
     });
@@ -173,6 +188,29 @@ export const NonWorkingTimeLayer = memo(function NonWorkingTimeLayer({
           period.color ||
           `var(--gantt-nonworking-${period.type || 'default'})`;
 
+        // If resourceId is set and we're in resource mode, only show for that resource row
+        if (resourceMode && period.resourceId && resourceRowInfos) {
+          const rowInfo = resourceRowInfos.find(r => r.id === period.resourceId);
+          if (!rowInfo) return null;
+
+          return (
+            <div
+              key={`nwt-${i}-${period.resourceId}`}
+              className={`gantt-non-working-period ${period.type || ''}`}
+              style={{
+                position: 'absolute',
+                left: Math.max(0, left),
+                width: width,
+                top: rowInfo.top,
+                height: rowInfo.height,
+                backgroundColor,
+                pointerEvents: 'none',
+              }}
+            />
+          );
+        }
+
+        // Default: show for all rows (full container height)
         return (
           <div
             key={`nwt-${i}`}

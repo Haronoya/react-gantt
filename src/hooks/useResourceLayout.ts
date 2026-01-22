@@ -116,6 +116,21 @@ export function useResourceLayout(
       groups.forEach((groupResources, groupName) => {
         const isCollapsed = collapsedGroups.has(groupName);
 
+        // Calculate group period (min start, max end of all tasks in this group)
+        let groupStart: number | undefined;
+        let groupEnd: number | undefined;
+        groupResources.forEach((resource) => {
+          const resourceTasks = tasksByResource.get(resource.id) || [];
+          resourceTasks.forEach((task) => {
+            if (groupStart === undefined || task.start < groupStart) {
+              groupStart = task.start;
+            }
+            if (groupEnd === undefined || task.end > groupEnd) {
+              groupEnd = task.end;
+            }
+          });
+        });
+
         // Add group header
         result.push({
           resource: null,
@@ -124,6 +139,8 @@ export function useResourceLayout(
           groupName,
           depth: 0,
           visible: true,
+          groupStart,
+          groupEnd,
         });
 
         // Add resources in group

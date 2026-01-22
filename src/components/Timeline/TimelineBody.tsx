@@ -14,6 +14,9 @@ import type { NonWorkingPeriod, WorkingHours } from '../../types/nonWorkingTime'
 import {
   timestampToPixel,
   calculateTimelineWidth,
+  calculateTaskPosition,
+  calculateMilestonePosition,
+  type TaskPosition,
 } from '../../utils/position';
 import {
   startOfDay,
@@ -22,7 +25,7 @@ import {
   addHours,
   isWeekend,
 } from '../../utils/date';
-import { MS_PER_DAY } from '../../constants';
+import { MS_PER_DAY, DEFAULT_BAR_HEIGHT_RATIO } from '../../constants';
 import styles from './Timeline.module.css';
 
 interface TimelineBodyProps {
@@ -77,13 +80,103 @@ export const TimelineBody = memo(function TimelineBody({
     getTasksForResource,
   } = useGanttContext();
 
-  // Calculate task positions
-  const { positions } = useTaskPositions({
+  // Calculate task positions for task mode
+  const { positions: taskModePositions } = useTaskPositions({
     tasks: visibleTasks,
     zoomConfig,
     viewStart,
     rowHeight,
   });
+
+  // Calculate positions for resource mode (tasks positioned based on resource row index)
+  // Also handles stacking of overlapping tasks within the same resource row
+  const resourceModePositions = useMemo(() => {
+    if (!resourceMode) return new Map<string, TaskPosition>();
+
+    const posMap = new Map<string, TaskPosition>();
+
+    resourceRows.forEach((resourceRow, rowIndex) => {
+      if (resourceRow.isGroupHeader || !resourceRow.resource) return;
+
+      const resourceTasks = getTasksForResource(resourceRow.resource.id);
+
+      // Sort tasks by start time for stacking calculation
+      const sortedTasks = [...resourceTasks].sort((a, b) => a.start - b.start);
+
+      // Calculate stack level for each task (for overlapping tasks)
+      const taskLevels = new Map<string, number>();
+      const endTimes: number[] = []; // End time of each level
+
+      sortedTasks.forEach((task) => {
+        // Find the first available level (where task doesn't overlap)
+        let level = 0;
+        for (let i = 0; i < endTimes.length; i++) {
+          if (endTimes[i] <= task.start) {
+            level = i;
+            endTimes[i] = task.end;
+            break;
+          }
+          level = i + 1;
+        }
+        if (level >= endTimes.length) {
+          endTimes.push(task.end);
+        } else {
+          endTimes[level] = task.end;
+        }
+        taskLevels.set(task.id, level);
+      });
+
+      // Calculate max levels for this resource row
+      const maxLevels = Math.max(1, endTimes.length);
+      const stackedBarHeight = rowHeight * DEFAULT_BAR_HEIGHT_RATIO / maxLevels;
+      const rowTop = rowIndex * rowHeight;
+
+      resourceTasks.forEach((task) => {
+        const isMilestone = task.type === 'milestone' || task.start === task.end;
+        const level = taskLevels.get(task.id) || 0;
+
+        if (isMilestone) {
+          const basePos = calculateMilestonePosition(
+            task.start,
+            rowIndex,
+            viewStart,
+            zoomConfig,
+            rowHeight,
+            DEFAULT_BAR_HEIGHT_RATIO
+          );
+          // Adjust position for stacking
+          const stackOffset = (rowHeight - rowHeight * DEFAULT_BAR_HEIGHT_RATIO) / 2;
+          posMap.set(task.id, {
+            ...basePos,
+            top: rowTop + stackOffset + level * stackedBarHeight,
+            height: stackedBarHeight,
+          });
+        } else {
+          const basePos = calculateTaskPosition(
+            task.start,
+            task.end,
+            rowIndex,
+            viewStart,
+            zoomConfig,
+            rowHeight,
+            DEFAULT_BAR_HEIGHT_RATIO
+          );
+          // Adjust position for stacking
+          const stackOffset = (rowHeight - rowHeight * DEFAULT_BAR_HEIGHT_RATIO) / 2;
+          posMap.set(task.id, {
+            ...basePos,
+            top: rowTop + stackOffset + level * stackedBarHeight,
+            height: stackedBarHeight,
+          });
+        }
+      });
+    });
+
+    return posMap;
+  }, [resourceMode, resourceRows, getTasksForResource, viewStart, zoomConfig, rowHeight]);
+
+  // Use the appropriate positions based on mode
+  const positions = resourceMode ? resourceModePositions : taskModePositions;
 
   // Determine row count based on mode
   const rowCount = resourceMode ? resourceRows.length : visibleTasks.length;
@@ -200,6 +293,12 @@ export const TimelineBody = memo(function TimelineBody({
             zoomConfig={zoomConfig}
             containerHeight={totalHeight}
             highlightWeekends={highlightWeekends}
+            resourceMode={resourceMode}
+            resourceRowInfos={resourceMode ? virtualItems.map((v) => ({
+              id: resourceRows[v.index]?.resource?.id || '',
+              top: v.start,
+              height: rowHeight,
+            })).filter(r => r.id !== '') : undefined}
           />
         )}
 
@@ -231,10 +330,12 @@ export const TimelineBody = memo(function TimelineBody({
         {/* Row backgrounds */}
         {virtualItems.map((virtualRow) => {
           const isDropTarget = isDragging && targetRowIndex === virtualRow.index;
+          // Check if this is a group header row in resource mode
+          const isGroupHeader = resourceMode && resourceRows[virtualRow.index]?.isGroupHeader;
           return (
             <div
               key={`row-bg-${virtualRow.index}`}
-              className={`${styles.rowBackground} ${isDropTarget ? styles.dropTarget : ''}`}
+              className={`${styles.rowBackground} ${isDropTarget ? styles.dropTarget : ''} ${isGroupHeader ? styles.groupHeaderBackground : ''}`}
               style={{
                 top: virtualRow.start,
                 height: rowHeight,
@@ -243,6 +344,46 @@ export const TimelineBody = memo(function TimelineBody({
             />
           );
         })}
+
+        {/* Resource group bars (only in resource mode) */}
+        {resourceMode && (
+          <div className={styles.groupBarsContainer}>
+            {virtualItems.map((virtualRow) => {
+              const resourceRow = resourceRows[virtualRow.index];
+              if (!resourceRow?.isGroupHeader) return null;
+
+              // Skip if no period data
+              if (resourceRow.groupStart === undefined || resourceRow.groupEnd === undefined) {
+                return null;
+              }
+
+              // Skip if outside view range
+              if (resourceRow.groupEnd < viewStart || resourceRow.groupStart > viewEnd) {
+                return null;
+              }
+
+              const left = timestampToPixel(resourceRow.groupStart, viewStart, zoomConfig.pixelsPerDay);
+              const width = (resourceRow.groupEnd - resourceRow.groupStart) / MS_PER_DAY * zoomConfig.pixelsPerDay;
+              const barHeight = rowHeight * 0.4;
+              const top = virtualRow.start + (rowHeight - barHeight) / 2;
+
+              return (
+                <div
+                  key={`group-bar-${resourceRow.groupName}`}
+                  className={styles.resourceGroupBar}
+                  style={{
+                    left: Math.max(0, left),
+                    width: Math.min(width, timelineWidth - Math.max(0, left)),
+                    top,
+                    height: barHeight,
+                  }}
+                >
+                  <span className={styles.resourceGroupBarLabel}>{resourceRow.groupName}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Task bars */}
         <div className={styles.tasksContainer}>
@@ -351,24 +492,53 @@ export const TimelineBody = memo(function TimelineBody({
         {/* Task deadline markers */}
         {showTaskDeadlines && (
           <div className={styles.deadlineMarkerLayer}>
-            {virtualItems.map((virtualRow) => {
-              const task = visibleTasks[virtualRow.index];
-              if (!task.deadline) return null;
+            {resourceMode ? (
+              // Resource mode: render deadline markers for tasks in each resource row
+              virtualItems.map((virtualRow) => {
+                const resourceRow = resourceRows[virtualRow.index];
+                if (!resourceRow || resourceRow.isGroupHeader || !resourceRow.resource) {
+                  return null;
+                }
 
-              return (
-                <TaskDeadlineMarker
-                  key={`deadline-${task.id}`}
-                  task={task}
-                  viewStart={viewStart}
-                  viewEnd={viewEnd}
-                  zoomConfig={zoomConfig}
-                  rowTop={virtualRow.start}
-                  rowHeight={rowHeight}
-                  deadlineColor={deadlineColor}
-                  onMarkerClick={onMarkerClick}
-                />
-              );
-            })}
+                const resourceTasks = getTasksForResource(resourceRow.resource.id);
+                return resourceTasks.map((task) => {
+                  if (!task.deadline) return null;
+                  return (
+                    <TaskDeadlineMarker
+                      key={`deadline-${task.id}`}
+                      task={task}
+                      viewStart={viewStart}
+                      viewEnd={viewEnd}
+                      zoomConfig={zoomConfig}
+                      rowTop={virtualRow.start}
+                      rowHeight={rowHeight}
+                      deadlineColor={deadlineColor}
+                      onMarkerClick={onMarkerClick}
+                    />
+                  );
+                });
+              })
+            ) : (
+              // Task mode: one deadline marker per row
+              virtualItems.map((virtualRow) => {
+                const task = visibleTasks[virtualRow.index];
+                if (!task?.deadline) return null;
+
+                return (
+                  <TaskDeadlineMarker
+                    key={`deadline-${task.id}`}
+                    task={task}
+                    viewStart={viewStart}
+                    viewEnd={viewEnd}
+                    zoomConfig={zoomConfig}
+                    rowTop={virtualRow.start}
+                    rowHeight={rowHeight}
+                    deadlineColor={deadlineColor}
+                    onMarkerClick={onMarkerClick}
+                  />
+                );
+              })
+            )}
           </div>
         )}
 

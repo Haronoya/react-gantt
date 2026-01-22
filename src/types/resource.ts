@@ -53,4 +53,8 @@ export interface ResourceRowData {
   depth: number;
   /** Whether this row is visible (not collapsed) */
   visible: boolean;
+  /** Group period start (for group headers) */
+  groupStart?: number;
+  /** Group period end (for group headers) */
+  groupEnd?: number;
 }
