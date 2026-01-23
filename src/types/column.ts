@@ -1,5 +1,24 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, CSSProperties } from 'react';
 import type { Task, NormalizedTask } from './task';
+
+/**
+ * Style options for column header or cell
+ */
+export interface ColumnStyleOptions {
+  /** Background color */
+  backgroundColor?: string;
+  /** Text color */
+  color?: string;
+  /** Font weight */
+  fontWeight?: CSSProperties['fontWeight'];
+  /** Custom CSS class */
+  className?: string;
+}
+
+/**
+ * @deprecated Use ColumnStyleOptions instead
+ */
+export type ColumnHeaderStyle = ColumnStyleOptions;
 
 /**
  * Column definition for the grid
@@ -23,4 +42,8 @@ export interface ColumnDef<T extends Task = Task> {
   render?: (value: unknown, task: NormalizedTask) => ReactNode;
   /** Text alignment */
   align?: 'left' | 'center' | 'right';
+  /** Header style customization */
+  headerStyle?: ColumnStyleOptions;
+  /** Cell style customization (applies to data rows) */
+  cellStyle?: ColumnStyleOptions;
 }

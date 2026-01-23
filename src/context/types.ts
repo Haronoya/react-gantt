@@ -35,6 +35,8 @@ export interface GanttContextValue {
   viewEnd: number;
   rowHeight: number;
   locale: string;
+  /** Position of expand/collapse icon for group tasks */
+  expandIconPosition: 'left' | 'right';
 
   // State
   selection: SelectionState;

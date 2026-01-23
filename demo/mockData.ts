@@ -38,6 +38,11 @@ export function generateTasks(count: number): Task[] {
       end: groupStart + 30 * MS_PER_DAY,
       type: 'group',
       progress: Math.random() * 0.5 + 0.3,
+      // グループ行のスタイル（左側グリッド用）
+      rowStyle: {
+        backgroundColor: '#e3f2fd',
+        fontWeight: 600,
+      },
     });
 
     // Add tasks within group
@@ -178,6 +183,11 @@ export const sampleColumns: ColumnDef[] = [
     accessor: 'title',
     resizable: true,
     align: 'left',
+    headerStyle: {
+      backgroundColor: '#1976d2',
+      color: '#ffffff',
+      fontWeight: 'bold',
+    },
   },
   {
     id: 'start',
@@ -188,6 +198,10 @@ export const sampleColumns: ColumnDef[] = [
     resizable: true,
     accessor: (task) => formatDateTimeGrid(task.start, true),
     align: 'center',
+    headerStyle: {
+      backgroundColor: '#2196f3',
+      color: '#ffffff',
+    },
   },
   {
     id: 'end',
@@ -198,6 +212,10 @@ export const sampleColumns: ColumnDef[] = [
     resizable: true,
     accessor: (task) => formatDateTimeGrid(task.end, true),
     align: 'center',
+    headerStyle: {
+      backgroundColor: '#2196f3',
+      color: '#ffffff',
+    },
   },
   {
     id: 'progress',
@@ -211,6 +229,11 @@ export const sampleColumns: ColumnDef[] = [
       return `${Math.round(progress * 100)}%`;
     },
     align: 'right',
+    headerStyle: {
+      backgroundColor: '#4caf50',
+      color: '#ffffff',
+      fontWeight: 600,
+    },
   },
 ];
 

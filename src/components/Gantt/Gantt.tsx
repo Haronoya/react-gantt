@@ -70,6 +70,8 @@ export const Gantt = memo(function Gantt({
   resourceMode = false,
   resourceGroupBy,
   showEmptyResources = true,
+  // UI options
+  expandIconPosition = 'left',
 }: GanttProps) {
   // Grid width state
   const [gridWidth, setGridWidth] = useState(initialGridWidth);
@@ -338,6 +340,7 @@ export const Gantt = memo(function Gantt({
       viewEnd: ganttState.viewEnd,
       rowHeight: ganttState.rowHeight,
       locale,
+      expandIconPosition,
 
       // State
       selection: ganttState.selection,
@@ -395,6 +398,7 @@ export const Gantt = memo(function Gantt({
       resourceLayout.rows,
       resourceLayout.toggleGroup,
       getTasksForResource,
+      expandIconPosition,
     ]
   );
 

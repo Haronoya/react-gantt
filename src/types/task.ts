@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import type { TaskSegment } from './segment';
 
 /**
@@ -6,7 +7,7 @@ import type { TaskSegment } from './segment';
 export type TaskType = 'task' | 'milestone' | 'group';
 
 /**
- * Custom styling options for a task
+ * Custom styling options for a task bar (timeline area)
  */
 export interface TaskStyle {
   /** CSS class to apply to the task bar */
@@ -15,6 +16,20 @@ export interface TaskStyle {
   color?: string;
   /** Progress bar color */
   progressColor?: string;
+}
+
+/**
+ * Custom styling options for a grid row (left panel)
+ */
+export interface RowStyle {
+  /** Background color of the row */
+  backgroundColor?: string;
+  /** Text color */
+  color?: string;
+  /** Font weight */
+  fontWeight?: CSSProperties['fontWeight'];
+  /** Custom CSS class */
+  className?: string;
 }
 
 /**
@@ -39,8 +54,10 @@ export interface Task {
   collapsed?: boolean;
   /** Custom row height in pixels */
   rowHeight?: number;
-  /** Custom styling */
+  /** Custom styling for task bar (timeline area) */
   style?: TaskStyle;
+  /** Custom styling for grid row (left panel) */
+  rowStyle?: RowStyle;
   /** Arbitrary metadata for user extensions */
   meta?: Record<string, unknown>;
 

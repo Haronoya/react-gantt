@@ -20,6 +20,7 @@ export const GridRow = memo(function GridRow({ task, columns, isDropTarget = fal
     handleToggleCollapse,
     handleSelectionChange,
     selection,
+    expandIconPosition,
   } = useGanttContext();
 
   const selected = isSelected(task.id);
@@ -45,10 +46,24 @@ export const GridRow = memo(function GridRow({ task, columns, isDropTarget = fal
     handleToggleCollapse(task.id);
   }, [task.id, handleToggleCollapse]);
 
+  // Build row style from task.rowStyle
+  const rowStyle: React.CSSProperties = { ...style };
+  if (task.rowStyle?.backgroundColor) {
+    rowStyle.backgroundColor = task.rowStyle.backgroundColor;
+  }
+  if (task.rowStyle?.color) {
+    rowStyle.color = task.rowStyle.color;
+  }
+  if (task.rowStyle?.fontWeight) {
+    rowStyle.fontWeight = task.rowStyle.fontWeight;
+  }
+
+  const rowClassName = `${styles.row} ${selected ? styles.selected : ''} ${isDropTarget ? styles.dropTarget : ''} ${task.rowStyle?.className ?? ''}`.trim();
+
   return (
     <div
-      className={`${styles.row} ${selected ? styles.selected : ''} ${isDropTarget ? styles.dropTarget : ''}`}
-      style={style}
+      className={rowClassName}
+      style={rowStyle}
       onClick={handleClick}
       role="row"
       aria-selected={selected}
@@ -60,6 +75,7 @@ export const GridRow = memo(function GridRow({ task, columns, isDropTarget = fal
           column={column}
           task={task}
           onToggleCollapse={column.id === 'title' ? handleCollapse : undefined}
+          expandIconPosition={expandIconPosition}
         />
       ))}
     </div>

@@ -66,11 +66,27 @@ export const GridHeader = memo(function GridHeader({ columns, onColumnResize }: 
               ? styles.alignRight
               : styles.alignLeft;
 
+        // Build header style from column.headerStyle
+        const headerStyle: React.CSSProperties = {
+          width: column.width,
+        };
+        if (column.headerStyle?.backgroundColor) {
+          headerStyle.backgroundColor = column.headerStyle.backgroundColor;
+        }
+        if (column.headerStyle?.color) {
+          headerStyle.color = column.headerStyle.color;
+        }
+        if (column.headerStyle?.fontWeight) {
+          headerStyle.fontWeight = column.headerStyle.fontWeight;
+        }
+
+        const headerClassName = `${styles.headerCell} ${alignClass} ${column.headerStyle?.className ?? ''}`.trim();
+
         return (
           <div
             key={column.id}
-            className={`${styles.headerCell} ${alignClass}`}
-            style={{ width: column.width }}
+            className={headerClassName}
+            style={headerStyle}
             role="columnheader"
           >
             <span className={styles.headerCellText}>{column.title}</span>

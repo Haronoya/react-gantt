@@ -99,6 +99,8 @@ export interface GanttProps {
   fitToContainer?: boolean;
   /** Sync parent task dates with children (parent spans all children) */
   syncParentDates?: boolean;
+  /** Position of expand/collapse icon for group tasks (default: 'left') */
+  expandIconPosition?: 'left' | 'right';
   /** CSS class name */
   className?: string;
   /** Inline styles */

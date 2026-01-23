@@ -213,6 +213,7 @@ export default function App() {
   const [showMarkers, setShowMarkers] = useState(true);
   const [highlightRelated, setHighlightRelated] = useState(true);
   const [showDependencies, setShowDependencies] = useState(true);
+  const [expandIconPosition, setExpandIconPosition] = useState<'left' | 'right'>('left');
 
   // Sample global markers
   const markers = useMemo((): Marker[] => {
@@ -610,6 +611,13 @@ export default function App() {
           >
             依存関係線 {showDependencies ? 'ON' : 'OFF'}
           </button>
+
+          <button
+            style={styles.buttonToggle}
+            onClick={() => setExpandIconPosition(expandIconPosition === 'left' ? 'right' : 'left')}
+          >
+            展開アイコン {expandIconPosition === 'left' ? '左' : '右'}
+          </button>
         </div>
 
         {/* Data Section */}
@@ -654,6 +662,7 @@ export default function App() {
           dependencies={showDependencies ? dependencies : []}
           showDependencies={showDependencies}
           highlightDependencies={true}
+          expandIconPosition={expandIconPosition}
           onTaskChange={handleTaskChange}
           onSelectionChange={handleSelectionChange}
           onColumnResize={handleColumnResize}
