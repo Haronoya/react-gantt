@@ -10,6 +10,7 @@ import {
   type Marker,
   type Dependency,
   type Resource,
+  type ViewConfig,
 } from '../src';
 import { sampleTasks, sampleColumns, hourlyTasks, hourlyColumns, generateLargeTasks, sampleResources, resourceTasks, resourceColumns } from './mockData';
 
@@ -471,6 +472,22 @@ export default function App() {
     setViewEnd(todayStart + config.ms);
   }, []);
 
+  // Handle view change from header click (zoom drill-down)
+  const handleViewChange = useCallback((view: ViewConfig) => {
+    console.log('View changed:', view);
+    if (view.zoom) {
+      setZoom(view.zoom);
+    }
+    if (view.start !== undefined) {
+      setViewStart(view.start);
+    }
+    if (view.end !== undefined) {
+      setViewEnd(view.end);
+    }
+    // Reset viewPeriod to custom when drilling down
+    setViewPeriod('all');
+  }, []);
+
   // Format current view date for display
   const currentViewLabel = useMemo(() => {
     if (viewStart === undefined) return '全期間表示';
@@ -670,6 +687,7 @@ export default function App() {
           onTaskDoubleClick={(task) => console.log('Task double-clicked:', task)}
           onMarkerClick={(marker) => console.log('Marker clicked:', marker)}
           onDependencyClick={(dep) => console.log('Dependency clicked:', dep)}
+          onViewChange={handleViewChange}
         />
       </div>
     </div>

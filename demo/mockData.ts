@@ -163,7 +163,10 @@ export function generateLargeTasks(count: number = 10000): Task[] {
  */
 function formatDateTimeGrid(timestamp: number, includeTime = false): string {
   const date = new Date(timestamp);
-  const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const dateStr = `${year}/${month}/${day}`;
   if (!includeTime) return dateStr;
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -192,8 +195,8 @@ export const sampleColumns: ColumnDef[] = [
   {
     id: 'start',
     title: '開始日時',
-    width: 130,
-    minWidth: 80,
+    width: 150,
+    minWidth: 100,
     maxWidth: 200,
     resizable: true,
     accessor: (task) => formatDateTimeGrid(task.start, true),
@@ -206,8 +209,8 @@ export const sampleColumns: ColumnDef[] = [
   {
     id: 'end',
     title: '終了日時',
-    width: 130,
-    minWidth: 80,
+    width: 150,
+    minWidth: 100,
     maxWidth: 200,
     resizable: true,
     accessor: (task) => formatDateTimeGrid(task.end, true),

@@ -58,6 +58,15 @@
   background: var(--gantt-weekend-bg);
 }
 
+.headerCellClickable {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.headerCellClickable:hover {
+  background: var(--gantt-header-hover-bg, rgba(0, 0, 0, 0.05));
+}
+
 .body {
   flex: 1;
   overflow: auto;

@@ -372,6 +372,9 @@ export const Gantt = memo(function Gantt({
       // Column resize
       handleColumnResize: onColumnResize,
 
+      // View change (for header click zoom)
+      handleViewChange: onViewChange,
+
       // Renderers
       renderers,
     }),
@@ -392,6 +395,7 @@ export const Gantt = memo(function Gantt({
       handleTooltipLeave,
       handleTooltipMove,
       onColumnResize,
+      onViewChange,
       renderers,
       resourceMode,
       resources,

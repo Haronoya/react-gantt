@@ -3,6 +3,7 @@ import type {
   NormalizedTask,
   ZoomConfig,
   ZoomLevel,
+  ViewConfig,
   SelectionState,
   TaskPatch,
   ChangeContext,
@@ -68,6 +69,9 @@ export interface GanttContextValue {
 
   // Column resize
   handleColumnResize?: (columnId: string, width: number) => void;
+
+  // View change (for header click zoom)
+  handleViewChange?: (view: ViewConfig) => void;
 
   // Custom renderers
   renderers?: GanttRenderers;
