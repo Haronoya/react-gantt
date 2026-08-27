@@ -99,6 +99,11 @@ export interface GanttProps {
   fitToContainer?: boolean;
   /** Sync parent task dates with children (parent spans all children) */
   syncParentDates?: boolean;
+  /**
+   * Scroll the timeline horizontally so this date (Unix timestamp ms) is in view.
+   * Applied whenever the value or zoom changes; pass e.g. Date.now() to jump to today.
+   */
+  scrollToDate?: number;
   /** Position of expand/collapse icon for group tasks (default: 'left') */
   expandIconPosition?: 'left' | 'right';
   /** CSS class name */

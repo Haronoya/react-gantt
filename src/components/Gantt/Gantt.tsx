@@ -40,6 +40,7 @@ export const Gantt = memo(function Gantt({
   showGrid = true,
   fitToContainer = false,
   syncParentDates = false,
+  scrollToDate,
   className,
   style,
   locale = 'ja-JP',
@@ -141,6 +142,20 @@ export const Gantt = memo(function Gantt({
     useSyncScroll((scrollTop, scrollLeft) => {
       onScroll?.({ scrollTop, scrollLeft });
     });
+
+  // Scroll horizontally so scrollToDate is in view (re-applied on zoom change)
+  const { viewStart: currentViewStart } = ganttState;
+  const { pixelsPerDay } = adjustedZoomConfig;
+  useEffect(() => {
+    if (scrollToDate === undefined) return;
+    const timeline = timelineRef.current;
+    if (!timeline) return;
+    // 対象日の1日分手前を左端にして、当日が見切れないようにする
+    const offsetPx =
+      ((scrollToDate - currentViewStart) / MS_PER_DAY - 1) * pixelsPerDay;
+    const maxScroll = Math.max(0, timeline.scrollWidth - timeline.clientWidth);
+    timeline.scrollLeft = Math.min(Math.max(0, offsetPx), maxScroll);
+  }, [scrollToDate, currentViewStart, pixelsPerDay, timelineRef]);
 
   // Get the target parent/resource ID for a row index
   const getRowTarget = useCallback(

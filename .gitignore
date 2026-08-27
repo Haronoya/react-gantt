@@ -144,3 +144,4 @@ demo-dist
 # Project docs (not for npm)
 CLAUDE.md
 FEATURE_ADDITIONS.md
+docs/npm-publish.md
