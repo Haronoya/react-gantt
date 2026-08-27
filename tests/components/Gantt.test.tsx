@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { Gantt } from '../../src';
 import type { Task } from '../../src';
 
@@ -40,8 +40,9 @@ describe('Gantt Component', () => {
 
   it('should display task titles in grid', () => {
     render(<Gantt tasks={sampleTasks} />);
-    expect(screen.getByText('Task 1')).toBeInTheDocument();
-    expect(screen.getByText('Task 2')).toBeInTheDocument();
+    const grid = within(screen.getByRole('grid'));
+    expect(grid.getByText('Task 1')).toBeInTheDocument();
+    expect(grid.getByText('Task 2')).toBeInTheDocument();
   });
 
   it('should respect showGrid prop', () => {
