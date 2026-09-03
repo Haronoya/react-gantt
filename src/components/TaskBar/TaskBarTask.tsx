@@ -69,6 +69,9 @@ export const TaskBarTask = memo(function TaskBarTask({
   const preview = getDragPreview(task.id);
   const progress = preview?.progress ?? task.progress ?? 0;
   const progressWidth = `${Math.round(progress * 100)}%`;
+  // Only tasks that actually track progress get the progress knob. At 0% it sits on
+  // top of the left resize handle (higher z-index), which would hijack start-resizes.
+  const showProgressHandle = editable && task.progress != null;
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, type: 'move' | 'resize-start' | 'resize-end' | 'progress') => {
@@ -198,11 +201,13 @@ export const TaskBarTask = memo(function TaskBarTask({
               className={`${styles.resizeHandle} ${styles.resizeHandleRight}`}
               onMouseDown={(e) => handleMouseDown(e, 'resize-end')}
             />
-            <div
-              className={styles.progressHandle}
-              style={{ left: progressWidth }}
-              onMouseDown={(e) => handleMouseDown(e, 'progress')}
-            />
+            {showProgressHandle && (
+              <div
+                className={styles.progressHandle}
+                style={{ left: progressWidth }}
+                onMouseDown={(e) => handleMouseDown(e, 'progress')}
+              />
+            )}
           </>
         )}
       </div>
@@ -256,11 +261,13 @@ export const TaskBarTask = memo(function TaskBarTask({
             onMouseDown={(e) => handleMouseDown(e, 'resize-end')}
           />
           {/* Progress handle */}
-          <div
-            className={styles.progressHandle}
-            style={{ left: progressWidth }}
-            onMouseDown={(e) => handleMouseDown(e, 'progress')}
-          />
+          {showProgressHandle && (
+            <div
+              className={styles.progressHandle}
+              style={{ left: progressWidth }}
+              onMouseDown={(e) => handleMouseDown(e, 'progress')}
+            />
+          )}
         </>
       )}
     </div>

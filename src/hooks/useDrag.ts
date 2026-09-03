@@ -58,6 +58,22 @@ interface UseDragResult {
 }
 
 /**
+ * After a real drag the browser still dispatches a `click` on the element under the
+ * pointer. Swallow that one click (capture phase, before React sees it) so a drop is
+ * not also treated as a task/row click. The guard is dropped on the next macrotask in
+ * case no click follows (e.g. mouseup outside the window).
+ */
+function suppressNextClick(): void {
+  if (typeof window === 'undefined') return;
+  const swallow = (e: MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+  };
+  window.addEventListener('click', swallow, true);
+  setTimeout(() => window.removeEventListener('click', swallow, true), 0);
+}
+
+/**
  * Hook to manage task drag operations (move, resize, progress, row change)
  */
 export function useDrag({
@@ -145,6 +161,10 @@ export function useDrag({
 
   const handleDragEnd = useCallback(() => {
     const state = dragRef.current;
+
+    if (state?.isDragging) {
+      suppressNextClick();
+    }
 
     if (!state || !state.isDragging || !onTaskChange) {
       setDragState(null);

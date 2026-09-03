@@ -191,7 +191,14 @@ export function getWeekNumber(timestamp: number): number {
  * Snap timestamp to nearest unit
  */
 export function snapToUnit(timestamp: number, snapMs: number): number {
-  return Math.round(timestamp / snapMs) * snapMs;
+  // Snap in local wall-clock time so day units land on local midnight (a plain
+  // Math.round on the epoch value snaps to UTC boundaries, which shifts bars by the
+  // timezone offset and makes the drag threshold asymmetric outside UTC).
+  const offsetBefore = new Date(timestamp).getTimezoneOffset() * MS_PER_MINUTE;
+  const snappedLocal = Math.round((timestamp - offsetBefore) / snapMs) * snapMs;
+  // Re-read the offset at the snapped instant so DST transitions still land on local time
+  const offsetAfter = new Date(snappedLocal + offsetBefore).getTimezoneOffset() * MS_PER_MINUTE;
+  return snappedLocal + offsetAfter;
 }
 
 /**

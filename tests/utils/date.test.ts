@@ -139,10 +139,24 @@ describe('date utilities', () => {
   });
 
   describe('snapToUnit', () => {
-    it('should snap to day', () => {
-      const timestamp = new Date('2024-01-15T12:00:00').getTime();
-      const result = snapToUnit(timestamp, MS_PER_DAY);
-      expect(result % MS_PER_DAY).toBe(0);
+    it('should snap day units to local midnight (not UTC midnight)', () => {
+      // 12:00 local + 1ms rounds up to the next local midnight
+      const afterNoon = new Date(2024, 0, 15, 12, 0, 0, 1).getTime();
+      expect(snapToUnit(afterNoon, MS_PER_DAY)).toBe(new Date(2024, 0, 16).getTime());
+      // 03:00 local rounds down to the same local midnight
+      const early = new Date(2024, 0, 15, 3).getTime();
+      expect(snapToUnit(early, MS_PER_DAY)).toBe(new Date(2024, 0, 15).getTime());
+    });
+
+    it('should keep a local-midnight timestamp unchanged when shifted by whole days', () => {
+      const midnight = new Date(2024, 0, 15).getTime();
+      expect(snapToUnit(midnight + MS_PER_DAY, MS_PER_DAY)).toBe(new Date(2024, 0, 16).getTime());
+      expect(snapToUnit(midnight - MS_PER_DAY, MS_PER_DAY)).toBe(new Date(2024, 0, 14).getTime());
+    });
+
+    it('should snap hour units to the nearest local hour', () => {
+      const t = new Date(2024, 0, 15, 10, 40).getTime();
+      expect(snapToUnit(t, 60 * 60 * 1000)).toBe(new Date(2024, 0, 15, 11).getTime());
     });
   });
 
