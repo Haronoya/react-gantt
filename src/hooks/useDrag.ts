@@ -239,7 +239,7 @@ export function useDrag({
     const hasParentChange = targetParentId !== state.initialParentId;
     const hasResourceChange = targetResourceId !== state.initialResourceId;
 
-    if (hasTimeChange || hasParentChange || hasResourceChange) {
+    if (hasTimeChange || hasParentChange || hasResourceChange || hasRowChange) {
       const changes: TaskPatch['changes'] = {};
       const previousValues: TaskPatch['previousValues'] = {};
 
