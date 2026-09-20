@@ -110,4 +110,71 @@ describe('TaskBar interactions', () => {
     expect(patch.changes.progress).toBeUndefined();
     void DAY;
   });
+
+  describe('drag axis lock', () => {
+    // Two rows so a row change is possible (row height 36px by default)
+    const twoTasks = (): Task[] => [
+      ...makeTasks(),
+      {
+        id: 'task-2',
+        title: 'Task 2',
+        start: new Date(2024, 0, 15).getTime(),
+        end: new Date(2024, 0, 20).getTime(),
+      },
+    ];
+
+    it('keeps a horizontal drag as a date change even when the pointer drifts into another row', () => {
+      const onTaskChange = vi.fn();
+      const { container } = render(
+        <Gantt tasks={twoTasks()} editable onTaskChange={onTaskChange} view={{ zoom: 'day' }} />
+      );
+      const bar = getBar(container);
+      fireEvent.mouseDown(bar, { button: 0, clientX: 100, clientY: 10 });
+      // Starts clearly horizontal → axis locks to time
+      fireEvent.mouseMove(document, { clientX: 130, clientY: 12 });
+      // Then drifts a full row down while still moving right
+      fireEvent.mouseMove(document, { clientX: 200, clientY: 50 });
+      fireEvent.mouseUp(document, { clientX: 200, clientY: 50 });
+
+      expect(onTaskChange).toHaveBeenCalledTimes(1);
+      const [patch, context] = onTaskChange.mock.calls[0];
+      expect(context.type).toBe('drag-move');
+      expect(context.targetRowIndex).toBeUndefined();
+      expect(patch.changes.start).toBe(new Date(2024, 0, 17).getTime());
+      expect(patch.changes.end).toBe(new Date(2024, 0, 22).getTime());
+    });
+
+    it('keeps a vertical drag as a row change without touching the dates', () => {
+      const onTaskChange = vi.fn();
+      const { container } = render(
+        <Gantt tasks={twoTasks()} editable onTaskChange={onTaskChange} view={{ zoom: 'day' }} />
+      );
+      const bar = getBar(container);
+      fireEvent.mouseDown(bar, { button: 0, clientX: 100, clientY: 10 });
+      // Starts clearly vertical → axis locks to rows
+      fireEvent.mouseMove(document, { clientX: 102, clientY: 30 });
+      // Then drifts two days to the right while dropping onto the next row
+      fireEvent.mouseMove(document, { clientX: 200, clientY: 46 });
+      fireEvent.mouseUp(document, { clientX: 200, clientY: 46 });
+
+      expect(onTaskChange).toHaveBeenCalledTimes(1);
+      const [patch, context] = onTaskChange.mock.calls[0];
+      expect(context.type).toBe('drag-row-change');
+      expect(context.targetRowIndex).toBe(1);
+      expect(patch.changes.start).toBeUndefined();
+      expect(patch.changes.end).toBeUndefined();
+    });
+
+    it('fires nothing for a tiny wobble that never settles on an axis', () => {
+      const onTaskChange = vi.fn();
+      const { container } = render(
+        <Gantt tasks={twoTasks()} editable onTaskChange={onTaskChange} view={{ zoom: 'hour' }} />
+      );
+      const bar = getBar(container);
+      fireEvent.mouseDown(bar, { button: 0, clientX: 100, clientY: 10 });
+      fireEvent.mouseMove(document, { clientX: 105, clientY: 14 });
+      fireEvent.mouseUp(document, { clientX: 105, clientY: 14 });
+      expect(onTaskChange).not.toHaveBeenCalled();
+    });
+  });
 });

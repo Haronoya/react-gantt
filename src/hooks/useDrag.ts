@@ -2,10 +2,17 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { NormalizedTask, TaskPatch, ChangeContext, ZoomConfig } from '../types';
-import { DRAG_THRESHOLD, MS_PER_DAY } from '../constants';
+import { DRAG_AXIS_LOCK_THRESHOLD, DRAG_THRESHOLD, MS_PER_DAY } from '../constants';
 import { snapToUnit } from '../utils/date';
 
 export type DragType = 'move' | 'resize-start' | 'resize-end' | 'progress';
+
+/**
+ * Which axis a drag is committed to. A `move` drag starts undecided (`null`) and locks
+ * to the axis the pointer travels along first: `'x'` changes the dates only, `'y'`
+ * changes the row only. Every other drag type is always `'x'`.
+ */
+export type DragAxis = 'x' | 'y' | null;
 
 interface DragState {
   taskId: string;
@@ -22,6 +29,7 @@ interface DragState {
   initialResourceId: string | undefined;
   isDragging: boolean;
   targetRowIndex: number;
+  axis: DragAxis;
 }
 
 interface UseDragOptions {
@@ -126,9 +134,11 @@ export function useDrag({
         initialResourceId: task.resourceId,
         isDragging: false,
         targetRowIndex: rowIndex,
+        // Only a plain move can turn into a row change; everything else is time-only
+        axis: type === 'move' && enableRowDrag ? null : 'x',
       });
     },
-    [tasks, editable]
+    [tasks, editable, enableRowDrag]
   );
 
   const handleDragMove = useCallback((clientX: number, clientY: number) => {
@@ -139,9 +149,17 @@ export function useDrag({
       const deltaY = Math.abs(clientY - prev.startY);
       const isDragging = prev.isDragging || deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD;
 
-      // Calculate target row based on vertical movement (only for 'move' type)
+      // Lock the axis once the pointer has clearly travelled in one direction. After that a
+      // horizontal drag never changes rows (pointer drift into the next row is ignored) and a
+      // vertical drag never changes dates.
+      let axis = prev.axis;
+      if (axis === null && Math.max(deltaX, deltaY) >= DRAG_AXIS_LOCK_THRESHOLD) {
+        axis = deltaY > deltaX ? 'y' : 'x';
+      }
+
+      // Calculate target row based on vertical movement (only for row-locked moves)
       let targetRowIndex = prev.targetRowIndex;
-      if (prev.type === 'move' && enableRowDrag && tasks.length > 0) {
+      if (axis === 'y' && tasks.length > 0) {
         const verticalDelta = clientY - prev.startY;
         const rowDelta = Math.round(verticalDelta / rowHeight);
         targetRowIndex = prev.initialRowIndex + rowDelta;
@@ -155,9 +173,10 @@ export function useDrag({
         currentY: clientY,
         isDragging,
         targetRowIndex,
+        axis,
       };
     });
-  }, [rowHeight, tasks.length, enableRowDrag]);
+  }, [rowHeight, tasks.length]);
 
   const handleDragEnd = useCallback(() => {
     const state = dragRef.current;
@@ -166,7 +185,8 @@ export function useDrag({
       suppressNextClick();
     }
 
-    if (!state || !state.isDragging || !onTaskChange) {
+    // A drag that never settled on an axis (tiny wobble) changes nothing
+    if (!state || !state.isDragging || !onTaskChange || state.axis === null) {
       setDragState(null);
       return;
     }
@@ -180,8 +200,11 @@ export function useDrag({
 
     switch (state.type) {
       case 'move':
-        newStart = snap(state.initialStart + deltaMs);
-        newEnd = snap(state.initialEnd + deltaMs);
+        // Row-locked moves keep their dates
+        if (state.axis === 'x') {
+          newStart = snap(state.initialStart + deltaMs);
+          newEnd = snap(state.initialEnd + deltaMs);
+        }
         break;
 
       case 'resize-start':
@@ -211,10 +234,8 @@ export function useDrag({
       }
     }
 
-    // Check for row change (only for 'move' type)
-    const hasRowChange = enableRowDrag &&
-      state.type === 'move' &&
-      state.targetRowIndex !== state.initialRowIndex;
+    // Check for row change (only for row-locked moves)
+    const hasRowChange = state.axis === 'y' && state.targetRowIndex !== state.initialRowIndex;
 
     // Get target parent/resource for the new row
     let targetParentId: string | null | undefined = state.initialParentId;
@@ -298,7 +319,7 @@ export function useDrag({
     }
 
     setDragState(null);
-  }, [tasks, onTaskChange, msPerPixel, snap, snapMs, enableRowDrag, getRowTarget]);
+  }, [tasks, onTaskChange, msPerPixel, snap, snapMs, getRowTarget]);
 
   const getDragPreview = useCallback(
     (taskId: string): DragPreview | null => {
@@ -311,10 +332,17 @@ export function useDrag({
 
       switch (dragState.type) {
         case 'move':
+          if (dragState.axis === 'x') {
+            return {
+              start: snap(dragState.initialStart + deltaMs),
+              end: snap(dragState.initialEnd + deltaMs),
+            };
+          }
+          // Row-locked (or undecided): the bar keeps its dates and only follows the row
           return {
-            start: snap(dragState.initialStart + deltaMs),
-            end: snap(dragState.initialEnd + deltaMs),
-            rowIndex: enableRowDrag ? dragState.targetRowIndex : undefined,
+            start: dragState.initialStart,
+            end: dragState.initialEnd,
+            rowIndex: dragState.axis === 'y' ? dragState.targetRowIndex : undefined,
           };
 
         case 'resize-start':
@@ -361,7 +389,7 @@ export function useDrag({
           return null;
       }
     },
-    [dragState, tasks, msPerPixel, snap, snapMs, enableRowDrag]
+    [dragState, tasks, msPerPixel, snap, snapMs]
   );
 
   // Attach global listeners when dragging
@@ -399,6 +427,8 @@ export function useDrag({
     getDragPreview,
     handleDragStart,
     isDragging: dragState?.isDragging ?? false,
-    targetRowIndex: dragState?.isDragging ? dragState.targetRowIndex : null,
+    // Only a row-locked drag has a drop target to highlight
+    targetRowIndex:
+      dragState?.isDragging && dragState.axis === 'y' ? dragState.targetRowIndex : null,
   };
 }

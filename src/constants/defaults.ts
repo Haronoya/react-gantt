@@ -48,3 +48,10 @@ export const TOOLTIP_DELAY = 500;
 
 /** Drag threshold in pixels before drag starts */
 export const DRAG_THRESHOLD = 3;
+
+/**
+ * Pointer travel (px) after which a `move` drag locks to the horizontal (dates) or
+ * vertical (rows) axis. Larger than DRAG_THRESHOLD so the first jittery pixels of a drag
+ * do not decide its direction.
+ */
+export const DRAG_AXIS_LOCK_THRESHOLD = 8;
