@@ -66,6 +66,10 @@ export const TaskBarTask = memo(function TaskBarTask({
     getDragPreview,
   } = useGanttContext();
 
+  // 期間の開始がビュー開始より前だと left が負になり、バー先頭に置いたラベルが
+  // 描画領域の外に出て見えなくなる。はみ出た分だけラベルを右にずらしてビュー内に留める。
+  const labelStyle = left < 0 ? { marginLeft: -left } : undefined;
+
   const preview = getDragPreview(task.id);
   const progress = preview?.progress ?? task.progress ?? 0;
   const progressWidth = `${Math.round(progress * 100)}%`;
@@ -188,7 +192,7 @@ export const TaskBarTask = memo(function TaskBarTask({
         )}
 
         {/* Label */}
-        <span className={styles.taskLabel}>{task.title}</span>
+        <span className={styles.taskLabel} style={labelStyle}>{task.title}</span>
 
         {/* Resize handles */}
         {editable && (
@@ -247,7 +251,7 @@ export const TaskBarTask = memo(function TaskBarTask({
       )}
 
       {/* Label */}
-      <span className={styles.taskLabel}>{task.title}</span>
+      <span className={styles.taskLabel} style={labelStyle}>{task.title}</span>
 
       {/* Resize handles */}
       {editable && (
